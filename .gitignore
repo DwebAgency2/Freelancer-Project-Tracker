@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Project specific
+backend/uploads/
+frontend/src/assets/logo_*.png
+frontend/src/assets/logo_*.jpg
+frontend/src/assets/logo_*.jpeg
