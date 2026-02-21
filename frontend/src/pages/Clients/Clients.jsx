@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Mail, Phone, Building, MoreVertical, Edit2, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Search, Mail, Phone, Building, Edit2, Trash2, ExternalLink, User } from 'lucide-react';
 import api from '../../services/api';
 import ClientForm from '../../components/ClientForm';
 import { Link } from 'react-router-dom';
@@ -71,11 +71,11 @@ const Clients = () => {
     );
 
     return (
-        <div className="page-wrapper animate-fade-in">
+        <div className="animate-fade-in">
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Clients</h1>
-                    <p className="page-subtitle">Manage your customer database and contact information.</p>
+                    <p className="page-subtitle">Your strategic network of business partnerships.</p>
                 </div>
                 <button onClick={handleAddClient} className="btn-primary">
                     <Plus size={18} />
@@ -83,9 +83,9 @@ const Clients = () => {
                 </button>
             </div>
 
-            <div className="card filters-card">
-                <div className="search-bar">
-                    <Search className="search-icon" size={20} />
+            <div className="card" style={{ marginBottom: '2.5rem', background: 'rgba(255,255,255,0.03)' }}>
+                <div className="search-bar-modern">
+                    <Search size={20} className="text-secondary" />
                     <input
                         type="text"
                         placeholder="Search by name, company, or email..."
@@ -96,67 +96,66 @@ const Clients = () => {
             </div>
 
             {loading ? (
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Loading clients...</p>
-                </div>
+                <p>Syncing client data...</p>
             ) : error ? (
-                <div className="error-state card">
-                    <p>{error}</p>
-                    <button onClick={fetchClients} className="btn-secondary">Retry</button>
+                <div className="card" style={{ textAlign: 'center' }}>
+                    <p style={{ color: '#ef4444' }}>{error}</p>
+                    <button onClick={fetchClients} className="btn-secondary" style={{ marginTop: '1rem' }}>Retry Sync</button>
                 </div>
             ) : filteredClients.length === 0 ? (
-                <div className="empty-state card">
-                    <Building size={48} className="empty-icon" />
-                    <h3>No clients found</h3>
-                    <p>{searchTerm ? 'Try a different search term.' : 'Get started by adding your first client.'}</p>
-                    {!searchTerm && (
-                        <button onClick={handleAddClient} className="btn-primary mt-4">
-                            Add Client
-                        </button>
-                    )}
+                <div className="card" style={{ textAlign: 'center', padding: '4rem' }}>
+                    <Building size={48} className="text-secondary" style={{ marginBottom: '1.5rem', opacity: 0.5 }} />
+                    <h3 style={{ fontSize: '1.25rem' }}>No clients detected</h3>
+                    <p style={{ color: 'var(--text-secondary)' }}>{searchTerm ? 'Try a more generic search term.' : 'Bridge the gap by adding your first client.'}</p>
                 </div>
             ) : (
-                <div className="grid-list">
+                <div className="grid-list" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
                     {filteredClients.map((client) => (
-                        <div key={client.id} className="client-card card animate-slide-up">
-                            <div className="client-card-header">
-                                <div className="client-info">
-                                    <h3 className="client-name">{client.name}</h3>
-                                    {client.company && <div className="client-company">{client.company}</div>}
+                        <div key={client.id} className="card animate-slide-up" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
+                            <div style={{ padding: '1.5rem', flex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                        <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                                            <User size={20} />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'white' }}>{client.name}</h3>
+                                            <p style={{ color: 'var(--accent-primary)', fontSize: '0.8125rem', fontWeight: 600 }}>{client.company || 'Private Entity'}</p>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button onClick={() => handleEditClient(client)} className="icon-btn" style={{ width: '32px', height: '32px' }}>
+                                            <Edit2 size={14} />
+                                        </button>
+                                        <button onClick={() => handleDeleteClient(client.id)} className="icon-btn danger" style={{ width: '32px', height: '32px' }}>
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="client-actions">
-                                    <button onClick={() => handleEditClient(client)} className="icon-btn tertiary" title="Edit">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => handleDeleteClient(client.id)} className="icon-btn danger" title="Delete">
-                                        <Trash2 size={16} />
-                                    </button>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
+                                    {client.email && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                                            <Mail size={14} />
+                                            <span>{client.email}</span>
+                                        </div>
+                                    )}
+                                    {client.phone && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                                            <Phone size={14} />
+                                            <span>{client.phone}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="client-card-body">
-                                {client.email && (
-                                    <div className="client-meta">
-                                        <Mail size={14} />
-                                        <span>{client.email}</span>
-                                    </div>
-                                )}
-                                {client.phone && (
-                                    <div className="client-meta">
-                                        <Phone size={14} />
-                                        <span>{client.phone}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="client-card-footer">
-                                <Link to={`/clients/${client.id}`} className="view-detail-link">
-                                    <span>View Projects</span>
+                            <div style={{ padding: '1rem 1.5rem', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Link to={`/clients/${client.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '0.8125rem', fontWeight: 700 }}>
+                                    <span>Active Projects</span>
                                     <ExternalLink size={14} />
                                 </Link>
                                 {client.default_hourly_rate > 0 && (
-                                    <div className="rate-badge">
+                                    <div className="status-badge" style={{ background: 'rgba(79, 209, 197, 0.1)', color: 'var(--accent-primary)', border: '1px solid var(--border-glow)' }}>
                                         ${client.default_hourly_rate}/hr
                                     </div>
                                 )}

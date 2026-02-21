@@ -107,9 +107,9 @@ const Projects = () => {
                 </button>
             </div>
 
-            <div className="card filters-card" style={{ gap: '1rem', flexWrap: 'wrap', display: 'flex' }}>
-                <div className="search-bar" style={{ flex: 1, minWidth: '300px' }}>
-                    <Search className="search-icon" size={20} />
+            <div className="card" style={{ gap: '1rem', flexWrap: 'wrap', display: 'flex', marginBottom: '2.5rem', background: 'rgba(255,255,255,0.03)' }}>
+                <div className="search-bar-modern" style={{ flex: 1, minWidth: '300px' }}>
+                    <Search size={20} className="text-secondary" />
                     <input
                         type="text"
                         placeholder="Search projects or clients..."
@@ -118,34 +118,32 @@ const Projects = () => {
                     />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Users size={18} style={{ color: '#64748b' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Users size={18} className="text-secondary" />
                         <select
                             value={clientFilter}
                             onChange={(e) => setClientFilter(e.target.value)}
-                            className="btn-secondary"
-                            style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0', minWidth: '150px' }}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', color: 'white', minWidth: '150px' }}
                         >
                             <option value="ALL">All Clients</option>
                             {clients.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
+                                <option key={c.id} value={c.id} style={{ background: '#0d1117' }}>{c.name}</option>
                             ))}
                         </select>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Filter size={18} style={{ color: '#64748b' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Filter size={18} className="text-secondary" />
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="btn-secondary"
-                            style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0' }}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', color: 'white' }}
                         >
-                            <option value="ALL">All Statuses</option>
-                            <option value="POTENTIAL">Potential</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="ON_HOLD">On Hold</option>
-                            <option value="COMPLETED">Completed</option>
-                            <option value="CANCELLED">Cancelled</option>
+                            <option value="ALL" style={{ background: '#0d1117' }}>All Statuses</option>
+                            <option value="POTENTIAL" style={{ background: '#0d1117' }}>Potential</option>
+                            <option value="ACTIVE" style={{ background: '#0d1117' }}>Active</option>
+                            <option value="ON_HOLD" style={{ background: '#0d1117' }}>On Hold</option>
+                            <option value="COMPLETED" style={{ background: '#0d1117' }}>Completed</option>
+                            <option value="CANCELLED" style={{ background: '#0d1117' }}>Cancelled</option>
                         </select>
                     </div>
                 </div>
@@ -175,37 +173,38 @@ const Projects = () => {
             ) : (
                 <div className="grid-list">
                     {filteredProjects.map((project) => (
-                        <div key={project.id} className="card animate-slide-up" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div key={project.id} className="card animate-slide-up" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
                             <div style={{ padding: '1.5rem', flex: 1 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                                     <div>
-                                        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0f172a' }}>{project.name}</h3>
-                                        <p style={{ color: 'var(--primary)', fontWeight: 500, fontSize: '0.875rem' }}>{project.client_name}</p>
+                                        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'white' }}>{project.name}</h3>
+                                        <p style={{ color: 'var(--accent-primary)', fontWeight: 600, fontSize: '0.8125rem' }}>{project.client_name}</p>
                                     </div>
-                                    <span className="rate-badge" style={{
-                                        backgroundColor: project.status === 'ACTIVE' ? '#ecfdf5' : '#f1f5f9',
-                                        color: project.status === 'ACTIVE' ? '#059669' : '#64748b'
+                                    <span className="status-badge" style={{
+                                        backgroundColor: project.status === 'ACTIVE' ? 'rgba(79, 209, 197, 0.1)' : 'rgba(255,255,255,0.05)',
+                                        color: project.status === 'ACTIVE' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                                        border: project.status === 'ACTIVE' ? '1px solid var(--border-glow)' : '1px solid var(--border-glass)'
                                     }}>
                                         {project.status}
                                     </span>
                                 </div>
 
-                                <p style={{ fontSize: '0.875rem', color: '#64748b', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '1.5rem' }}>
                                     {project.description || 'No description provided.'}
                                 </p>
 
                                 <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#475569', fontSize: '0.875rem' }}>
-                                        <Clock size={16} style={{ color: '#94a3b8' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                                        <Clock size={16} className="text-secondary" />
                                         <span>{project.budget_type === 'HOURLY' ? 'Hourly' : 'Fixed'}</span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#475569', fontSize: '0.875rem' }}>
-                                        <DollarSign size={16} style={{ color: '#94a3b8' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                                        <DollarSign size={16} className="text-secondary" />
                                         <span>{project.budget_type === 'FIXED' ? `$${project.estimated_budget}` : `$${project.billing_rate}/hr`}</span>
                                     </div>
                                     {project.deadline && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#475569', fontSize: '0.875rem' }}>
-                                            <Calendar size={16} style={{ color: '#94a3b8' }} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                                            <Calendar size={16} className="text-secondary" />
                                             <span style={{ color: new Date(project.deadline) < new Date() ? '#ef4444' : 'inherit' }}>
                                                 {new Date(project.deadline).toLocaleDateString()}
                                             </span>
@@ -214,7 +213,7 @@ const Projects = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: '1rem 1.5rem', backgroundColor: '#f8fafc', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                            <div style={{ padding: '1rem 1.5rem', backgroundColor: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                                 <button onClick={() => handleEditProject(project)} className="icon-btn" title="Edit">
                                     <Edit2 size={16} />
                                 </button>

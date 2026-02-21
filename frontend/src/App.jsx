@@ -5,6 +5,9 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Projects from './pages/Projects/Projects';
 import ProjectDetail from './pages/Projects/ProjectDetail';
 import Invoices from './pages/Invoices/Invoices';
+import InvoiceWizard from './pages/Invoices/InvoiceWizard';
+import InvoiceDetail from './pages/Invoices/InvoiceDetail';
+import TimeTracking from './pages/TimeTracking/TimeTracking';
 import Clients from './pages/Clients/Clients';
 import ClientDetail from './pages/Clients/ClientDetail';
 import Login from './pages/Auth/Login';
@@ -27,6 +30,9 @@ function App() {
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:id" element={<ProjectDetail />} />
             <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/new" element={<InvoiceWizard />} />
+            <Route path="invoices/:id" element={<InvoiceDetail />} />
+            <Route path="time" element={<TimeTracking />} />
             <Route path="clients" element={<Clients />} />
             <Route path="clients/:id" element={<ClientDetail />} />
             <Route path="profile" element={<Profile />} />

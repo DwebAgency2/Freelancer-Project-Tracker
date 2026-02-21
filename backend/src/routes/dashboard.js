@@ -23,21 +23,21 @@ router.get('/stats', async (req, res, next) => {
 
         // 1. Total earnings this month (paid invoices)
         const earningsResult = await pool.query(
-            "SELECT SUM(total_amount) as total FROM invoices WHERE user_id = $1 AND status = 'paid' AND issue_date >= $2 AND issue_date <= $3",
+            "SELECT SUM(total) as total FROM invoices WHERE user_id = $1 AND status = 'PAID' AND invoice_date >= $2 AND invoice_date <= $3",
             [userId, startOfMonth, endOfMonth]
         );
         const totalEarnings = parseFloat(earningsResult.rows[0].total || 0);
 
-        // 2. Outstanding amount (sent + overdue)
+        // 2. Outstanding amount (SENT + OVERDUE)
         const outstandingResult = await pool.query(
-            "SELECT SUM(total_amount) as total FROM invoices WHERE user_id = $1 AND status IN ('sent', 'overdue')",
+            "SELECT SUM(total) as total FROM invoices WHERE user_id = $1 AND status IN ('SENT', 'OVERDUE')",
             [userId]
         );
         const outstandingAmount = parseFloat(outstandingResult.rows[0].total || 0);
 
         // 3. Hours logged this month
         const hoursResult = await pool.query(
-            "SELECT SUM(duration_minutes) as total FROM time_entries WHERE user_id = $1 AND start_time >= $2 AND start_time <= $3",
+            "SELECT SUM(duration_minutes) as total FROM time_entries WHERE user_id = $1 AND date >= $2 AND date <= $3",
             [userId, startOfMonth, endOfMonth]
         );
         const hoursThisMonth = (parseFloat(hoursResult.rows[0].total || 0) / 60);
@@ -54,7 +54,7 @@ router.get('/stats', async (req, res, next) => {
             `SELECT i.*, c.name as client_name 
              FROM invoices i 
              LEFT JOIN clients c ON i.client_id = c.id 
-             WHERE i.user_id = $1 AND i.status = 'overdue' 
+             WHERE i.user_id = $1 AND i.status = 'OVERDUE' 
              ORDER BY i.due_date ASC`,
             [userId]
         );

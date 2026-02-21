@@ -49,112 +49,110 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content">
-                <div className="modal-header">
-                    <h2>{initialData ? 'Edit Client' : 'Add New Client'}</h2>
-                    <button onClick={onClose} className="close-btn">
-                        <X size={20} />
+            <div className="modal-content animate-slide-up" style={{ maxWidth: '600px', width: '90%' }}>
+                <div className="modal-header" style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '1.25rem' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{initialData ? 'Edit Client Profile' : 'Register New Client'}</h2>
+                    <button onClick={onClose} className="icon-btn" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <X size={18} />
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="form-grid">
-                    <div className="form-group full-width">
-                        <label>Client Name*</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            placeholder="e.g. John Doe"
-                        />
+                <form onSubmit={handleSubmit} style={{ marginTop: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                            <label>Full Name / Identifier*</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                placeholder="e.g. Alexander Pierce"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Organization / Company</label>
+                            <input
+                                type="text"
+                                name="company"
+                                value={formData.company}
+                                onChange={handleChange}
+                                placeholder="Acme Dynamics"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Primary Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="client@nexus.com"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Direct Line / Phone</label>
+                            <input
+                                type="text"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Tax ID / Registration</label>
+                            <input
+                                type="text"
+                                name="tax_id"
+                                value={formData.tax_id}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Standard Hourly Rate ($)</label>
+                            <input
+                                type="number"
+                                name="default_hourly_rate"
+                                value={formData.default_hourly_rate}
+                                onChange={handleChange}
+                                step="0.01"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Payment Cycle</label>
+                            <input
+                                type="text"
+                                name="payment_terms"
+                                value={formData.payment_terms}
+                                onChange={handleChange}
+                                placeholder="e.g. Net 15"
+                            />
+                        </div>
+                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                            <label>Physical / Billing Address</label>
+                            <textarea
+                                name="address"
+                                value={formData.address}
+                                onChange={handleChange}
+                                rows="2"
+                            ></textarea>
+                        </div>
+                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                            <label>Internal Strategy Notes</label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleChange}
+                                rows="2"
+                                placeholder="Relationship context, specific requirements..."
+                            ></textarea>
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <label>Company</label>
-                        <input
-                            type="text"
-                            name="company"
-                            value={formData.company}
-                            onChange={handleChange}
-                            placeholder="e.g. Acme Corp"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Email Address</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="client@example.com"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Phone</label>
-                        <input
-                            type="text"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            placeholder="+1 (555) 000-0000"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Tax ID / VAT</label>
-                        <input
-                            type="text"
-                            name="tax_id"
-                            value={formData.tax_id}
-                            onChange={handleChange}
-                            placeholder="e.g. EIN or VAT number"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Default Hourly Rate ($)</label>
-                        <input
-                            type="number"
-                            name="default_hourly_rate"
-                            value={formData.default_hourly_rate}
-                            onChange={handleChange}
-                            placeholder="0.00"
-                            step="0.01"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Payment Terms</label>
-                        <input
-                            type="text"
-                            name="payment_terms"
-                            value={formData.payment_terms}
-                            onChange={handleChange}
-                            placeholder="e.g. Net 30"
-                        />
-                    </div>
-                    <div className="form-group full-width">
-                        <label>Address</label>
-                        <textarea
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            placeholder="Street, City, Country"
-                            rows="2"
-                        ></textarea>
-                    </div>
-                    <div className="form-group full-width">
-                        <label>Notes</label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
-                            onChange={handleChange}
-                            placeholder="Any private notes about this client..."
-                            rows="2"
-                        ></textarea>
-                    </div>
-                    <div className="modal-footer full-width">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2.5rem', borderTop: '1px solid var(--border-glass)', paddingTop: '1.5rem' }}>
                         <button type="button" onClick={onClose} className="btn-secondary">
                             Cancel
                         </button>
                         <button type="submit" className="btn-primary">
-                            {initialData ? 'Update Client' : 'Save Client'}
+                            <span>{initialData ? 'Synchronize Updates' : 'Initialize Client'}</span>
                         </button>
                     </div>
                 </form>

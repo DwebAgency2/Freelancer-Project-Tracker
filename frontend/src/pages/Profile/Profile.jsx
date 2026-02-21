@@ -81,102 +81,124 @@ const Profile = () => {
     };
 
     return (
-        <div className="profile-container">
+        <div className="animate-fade-in">
             <div className="page-header">
-                <h1>Settings & Profile</h1>
-                <p>Manage your business information and application settings</p>
+                <div>
+                    <h1 className="page-title">Settings & Profile</h1>
+                    <p className="page-subtitle">Configure your business identity and invoicing defaults.</p>
+                </div>
             </div>
 
             {message && (
-                <div className={`alert ${message.includes('Error') ? 'alert-danger' : 'alert-success'}`}>
+                <div className={`alert ${message.includes('Error') ? 'alert-danger' : 'alert-success'}`} style={{ marginBottom: '2rem' }}>
                     {message}
                 </div>
             )}
 
             <form onSubmit={handleSubmit} className="profile-form">
-                <div className="profile-grid">
-                    {/* Business Information */}
-                    <section className="profile-section">
-                        <h3><Building className="section-icon" /> Business Details</h3>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Business Name</label>
-                                <input type="text" name="business_name" value={formData.business_name} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Email Address (read-only)</label>
-                                <input type="email" value={user?.email || ''} disabled className="input-disabled" />
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Phone Number</label>
-                                <input type="text" name="phone" value={formData.phone} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Tax ID / VAT Number</label>
-                                <input type="text" name="tax_id" value={formData.tax_id} onChange={handleChange} />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>Business Address</label>
-                            <textarea name="address" value={formData.address} onChange={handleChange} rows="3"></textarea>
-                        </div>
-                    </section>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
 
-                    {/* Logo Upload */}
-                    <section className="profile-section logo-section">
-                        <h3><Upload className="section-icon" /> Business Logo</h3>
-                        <div className="logo-upload-wrapper">
-                            <div className="logo-preview">
-                                {logoPreview ? (
-                                    <img src={logoPreview} alt="Logo Preview" />
-                                ) : (
-                                    <div className="logo-placeholder">No Logo</div>
-                                )}
-                            </div>
-                            <div className="logo-controls">
-                                <label className="btn-secondary">
-                                    Choose New Logo
-                                    <input type="file" onChange={handleLogoChange} accept="image/*" hidden />
-                                </label>
-                                <p className="txt-small">Accepts JPG, PNG, SVG (Max 5MB)</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        {/* Business Information */}
+                        <div className="card">
+                            <h3 style={{ fontSize: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Building size={18} className="text-accent" />
+                                Business Identity
+                            </h3>
+                            <div style={{ display: 'grid', gap: '1.25rem' }}>
+                                <div className="form-group">
+                                    <label>Professional Name / Business Name</label>
+                                    <input type="text" name="business_name" value={formData.business_name} onChange={handleChange} placeholder="e.g. John Doe Design" />
+                                </div>
+                                <div className="form-group">
+                                    <label>Contact Email (Secure)</label>
+                                    <input type="email" value={user?.email || ''} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div className="form-group">
+                                        <label>Direct Phone</label>
+                                        <input type="text" name="phone" value={formData.phone} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Tax ID / VAT</label>
+                                        <input type="text" name="tax_id" value={formData.tax_id} onChange={handleChange} />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Registered Office Address</label>
+                                    <textarea name="address" value={formData.address} onChange={handleChange} rows="3"></textarea>
+                                </div>
                             </div>
                         </div>
-                    </section>
 
-                    {/* Billing Defaults */}
-                    <section className="profile-section">
-                        <h3><CreditCard className="section-icon" /> Billing Defaults</h3>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Default Hourly Rate ($)</label>
-                                <input type="number" name="default_hourly_rate" value={formData.default_hourly_rate} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Default Tax Rate (%)</label>
-                                <input type="number" name="default_tax_rate" value={formData.default_tax_rate} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Invoice Prefix</label>
-                                <input type="text" name="invoice_prefix" value={formData.invoice_prefix} onChange={handleChange} />
+                        {/* Logo Upload */}
+                        <div className="card">
+                            <h3 style={{ fontSize: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Upload size={18} className="text-accent" />
+                                Brand Asset (Logo)
+                            </h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                                <div style={{
+                                    width: '100px', height: '100px', borderRadius: '12px',
+                                    background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border-glass)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                                }}>
+                                    {logoPreview ? (
+                                        <img src={logoPreview} alt="Logo Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                    ) : (
+                                        <Building size={32} style={{ opacity: 0.2 }} />
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="btn-secondary" style={{ cursor: 'pointer' }}>
+                                        Upload New Asset
+                                        <input type="file" onChange={handleLogoChange} accept="image/*" hidden />
+                                    </label>
+                                    <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>SVG or PNG recommended for best quality.</p>
+                                </div>
                             </div>
                         </div>
-                        <div className="form-group">
-                            <label>Payment Instructions</label>
-                            <textarea name="payment_instructions" value={formData.payment_instructions} onChange={handleChange} rows="3" placeholder="e.g. Bank Account details"></textarea>
-                        </div>
-                        <div className="form-group">
-                            <label>Terms & Conditions</label>
-                            <textarea name="terms_conditions" value={formData.terms_conditions} onChange={handleChange} rows="3"></textarea>
-                        </div>
-                    </section>
-                </div>
+                    </div>
 
-                <div className="profile-actions">
-                    <button type="submit" className="btn-primary" disabled={loading}>
-                        {loading ? 'Saving Changes...' : 'Save All Changes'}
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        {/* Billing Defaults */}
+                        <div className="card">
+                            <h3 style={{ fontSize: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <CreditCard size={18} className="text-accent" />
+                                Billing & Compliance
+                            </h3>
+                            <div style={{ display: 'grid', gap: '1.25rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div className="form-group">
+                                        <label>Base Hourly Rate ($)</label>
+                                        <input type="number" name="default_hourly_rate" value={formData.default_hourly_rate} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Standard Tax (%)</label>
+                                        <input type="number" name="default_tax_rate" value={formData.default_tax_rate} onChange={handleChange} />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Invoice Number Prefix</label>
+                                    <input type="text" name="invoice_prefix" value={formData.invoice_prefix} onChange={handleChange} placeholder="e.g. INV-" />
+                                </div>
+                                <div className="form-group">
+                                    <label>Payment / Remittance Info</label>
+                                    <textarea name="payment_instructions" value={formData.payment_instructions} onChange={handleChange} rows="3" placeholder="Bank details, wire instructions..."></textarea>
+                                </div>
+                                <div className="form-group">
+                                    <label>Standard Terms & Conditions</label>
+                                    <textarea name="terms_conditions" value={formData.terms_conditions} onChange={handleChange} rows="3" placeholder="Payment due within 30 days..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', padding: '1rem' }}>
+                                {loading ? 'Saving Changes...' : 'Synchronize Settings'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>

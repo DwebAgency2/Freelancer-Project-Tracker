@@ -9,7 +9,7 @@ router.use(protect);
 // ─── GET /api/time-entries ────────────────────────────────────────────────────
 router.get('/', async (req, res, next) => {
     try {
-        const { project_id, start_date, end_date, is_billable, is_billed } = req.query;
+        const { project_id, client_id, start_date, end_date, is_billable, is_billed } = req.query;
         const userId = req.user.id;
 
         let queryText = `
@@ -25,6 +25,11 @@ router.get('/', async (req, res, next) => {
         if (project_id) {
             queryText += ` AND t.project_id = $${index}`;
             params.push(project_id);
+            index++;
+        }
+        if (client_id) {
+            queryText += ` AND p.client_id = $${index}`;
+            params.push(client_id);
             index++;
         }
         if (is_billable !== undefined) {
