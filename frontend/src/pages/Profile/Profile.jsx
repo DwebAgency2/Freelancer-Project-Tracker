@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { User, Mail, Building, Phone, MapPin, CreditCard, Upload } from 'lucide-react';
+import { getImageUrl } from '../../utils/url';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
@@ -36,7 +37,7 @@ const Profile = () => {
                 default_tax_rate: user.default_tax_rate || '',
             });
             if (user.logo_url) {
-                setLogoPreview(`http://localhost:5000${user.logo_url}`);
+                setLogoPreview(getImageUrl(user.logo_url));
             }
         }
     }, [user]);

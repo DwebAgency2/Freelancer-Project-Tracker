@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, ArrowLeft, CheckCircle2, DollarSign, Download, Calendar, Mail, Building, Phone, Zap } from 'lucide-react';
 import api from '../../services/api';
+import { getImageUrl } from '../../utils/url';
 import toast from 'react-hot-toast';
 
 const InvoiceDetail = () => {
@@ -143,9 +144,15 @@ const InvoiceDetail = () => {
                 <div className="invoice-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5rem', borderBottom: '1px solid var(--border-glass)', paddingBottom: '3rem' }}>
                     <div className="invoice-brand">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2rem' }}>
-                            <div style={{ width: '48px', height: '48px', background: 'var(--accent-primary)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--accent-primary-glow)' }}>
-                                <Zap size={28} color="white" />
-                            </div>
+                            {user?.logo_url ? (
+                                <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)' }}>
+                                    <img src={getImageUrl(user.logo_url)} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </div>
+                            ) : (
+                                <div style={{ width: '48px', height: '48px', background: 'var(--accent-primary)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--accent-primary-glow)' }}>
+                                    <Zap size={28} color="white" />
+                                </div>
+                            )}
                             <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', margin: 0 }}>ZenTrack</h2>
                         </div>
                         <div className="business-info" style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', lineHeight: '1.8' }}>

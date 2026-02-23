@@ -6,27 +6,28 @@ const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// ─── Multer config for logo uploads ──────────────────────────────────────────
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../../uploads/logos'));
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `logo-${req.user.id}-${Date.now()}${ext}`);
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// ─── Cloudinary configuration ──────────────────────────────────────────────
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'zentrack/logos',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'svg', 'gif'],
+        public_id: (req, file) => `logo-${req.user.id}-${Date.now()}`,
     },
 });
 
 const upload = multer({
     storage,
     limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowed = /jpeg|jpg|png|gif|svg/;
-        const ext = allowed.test(path.extname(file.originalname).toLowerCase());
-        const mime = allowed.test(file.mimetype);
-        if (ext && mime) return cb(null, true);
-        cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, svg)'));
-    },
 });
 
 // ─── GET /api/user/profile ────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ router.post('/logo', protect, upload.single('logo'), async (req, res, next) => {
             return res.status(400).json({ message: 'No file uploaded.' });
         }
 
-        const logo_url = `/uploads/logos/${req.file.filename}`;
+        const logo_url = req.file.path; // cloudinary-storage sets path as the secure_url
         await pool.query('UPDATE users SET logo_url = $1, updated_at = NOW() WHERE id = $2', [logo_url, req.user.id]);
 
         res.json({ message: 'Logo uploaded successfully', logo_url });
