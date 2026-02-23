@@ -19,16 +19,18 @@ const dashboardRoutes = require('./src/routes/dashboard');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ─── Ensure upload directories exist ─────────────────────────────────────────
-const uploadDirs = ['uploads', 'uploads/logos'];
-uploadDirs.forEach((dir) => {
-    const fullPath = path.join(__dirname, dir);
-    if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
-});
+// ─── Ensure upload directories exist (Local Development only) ───────────────
+if (process.env.NODE_ENV !== 'production') {
+    const uploadDirs = ['uploads', 'uploads/logos'];
+    uploadDirs.forEach((dir) => {
+        const fullPath = path.join(__dirname, dir);
+        if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
+    });
+}
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:3000'],
     credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
