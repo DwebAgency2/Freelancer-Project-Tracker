@@ -135,23 +135,49 @@ const MainLayout = () => {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         {/* Desktop Side Icons - Hidden on Mobile */}
-                        <div className="desktop-only" style={{ alignItems: 'center', gap: '1rem', marginRight: '1rem' }}>
-                            <button className="icon-btn" title="Notifications" style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: 'var(--text-secondary)', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}>
+                        <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginRight: '1rem' }}>
+                            <button className="icon-btn" title="Notifications">
                                 <Bell size={18} />
                             </button>
-                            <button className="icon-btn" title="AI Assistant" style={{ background: 'rgba(79, 209, 197, 0.1)', color: 'var(--accent-primary)', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}>
+                            <button className="icon-btn" title="AI Assistant" style={{
+                                background: 'rgba(79, 209, 197, 0.05)',
+                                color: 'var(--accent-primary)',
+                                borderColor: 'var(--accent-primary-glow)'
+                            }}>
                                 <Sparkles size={18} />
                             </button>
-                            <div style={{ height: '24px', width: '1px', background: 'var(--border-glass)', margin: '0 0.5rem' }}></div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+
+                            <div style={{ height: '32px', width: '1px', background: 'var(--border-glass)', margin: '0 0.5rem' }}></div>
+
+                            <div className="user-profile-header" style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                cursor: 'pointer',
+                                padding: '0.5rem 0.75rem',
+                                borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.02)',
+                                border: '1px solid var(--border-glass)',
+                                transition: 'var(--transition-smooth)'
+                            }}>
                                 <div style={{
-                                    width: '32px', height: '32px', borderRadius: '50%',
-                                    background: 'rgba(255,255,255,0.05)', display: 'flex',
-                                    alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-glass)'
+                                    width: '32px', height: '32px', borderRadius: '10px',
+                                    background: 'var(--bg-glass-heavy)', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    border: '1px solid var(--border-glass)',
+                                    color: 'var(--accent-primary)'
                                 }}>
                                     <User size={16} />
                                 </div>
-                                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{user?.name?.split(' ')[0] || 'User'}</span>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'white', lineHeight: 1.2 }}>
+                                        {user?.name?.split(' ')[0] || 'User'}
+                                    </span>
+                                    <span style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                                        Operative
+                                    </span>
+                                </div>
+                                <ChevronDown size={14} className="text-secondary" style={{ marginLeft: '0.25rem' }} />
                             </div>
                         </div>
 
