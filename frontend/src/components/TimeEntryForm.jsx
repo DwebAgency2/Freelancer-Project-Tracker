@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Clock } from 'lucide-react';
 import api from '../services/api';
 
-const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
+const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData, submitting }) => {
     const [projects, setProjects] = useState([]);
     const [formData, setFormData] = useState({
         project_id: '',
@@ -13,6 +13,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         description: '',
         is_billable: true,
     });
+    const [localErrors, setLocalErrors] = useState({});
 
     useEffect(() => {
         if (isOpen) {
@@ -59,11 +60,19 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Validation
+        const errors = {};
         if (!formData.project_id) {
-            alert('Please select a project');
+            errors.project_id = 'Please select a project';
+        }
+        if (formData.duration_minutes !== '' && parseInt(formData.duration_minutes) <= 0) {
+            errors.duration_minutes = 'Duration must be positive';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setLocalErrors(errors);
             return;
         }
+        setLocalErrors({});
 
         // If duration is missing but times are present, backend handles it
         // but it's good to have a simple check here
@@ -98,6 +107,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <label>Associate Project*</label>
                             <select
                                 name="project_id"
+                                className="styled-select"
                                 value={formData.project_id}
                                 onChange={handleChange}
                                 required
@@ -107,6 +117,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                                     <option key={p.id} value={p.id} style={{ background: '#0d1117' }}>{p.name} — {p.client_name}</option>
                                 ))}
                             </select>
+                            {localErrors.project_id && <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>{localErrors.project_id}</p>}
                         </div>
 
                         <div className="form-group">
@@ -114,6 +125,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="date"
                                 name="date"
+                                className="styled-input"
                                 value={formData.date}
                                 onChange={handleChange}
                                 required
@@ -125,11 +137,13 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="number"
                                 name="duration_minutes"
+                                className="styled-input"
                                 value={formData.duration_minutes}
                                 onChange={handleChange}
                                 placeholder="e.g. 60"
                                 min="1"
                             />
+                            {localErrors.duration_minutes && <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>{localErrors.duration_minutes}</p>}
                         </div>
 
                         <div className="form-group">
@@ -137,6 +151,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="time"
                                 name="start_time"
+                                className="styled-input"
                                 value={formData.start_time}
                                 onChange={handleChange}
                             />
@@ -147,6 +162,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="time"
                                 name="end_time"
+                                className="styled-input"
                                 value={formData.end_time}
                                 onChange={handleChange}
                             />
@@ -156,6 +172,7 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <label>Session Description</label>
                             <textarea
                                 name="description"
+                                className="styled-textarea"
                                 value={formData.description}
                                 onChange={handleChange}
                                 placeholder="Detail the specific tasks completed during this window..."
@@ -180,8 +197,15 @@ const TimeEntryForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         <button type="button" onClick={onClose} className="btn-secondary">
                             Cancel
                         </button>
-                        <button type="submit" className="btn-primary">
-                            <span>{initialData ? 'Synchronize Session' : 'Finalize Record'}</span>
+                        <button type="submit" className="btn-primary" disabled={submitting}>
+                            {submitting ? (
+                                <>
+                                    <div className="btn-spinner"></div>
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <span>{initialData ? 'Synchronize Session' : 'Finalize Record'}</span>
+                            )}
                         </button>
                     </div>
                 </form>

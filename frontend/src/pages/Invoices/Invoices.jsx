@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, FileText, CheckCircle2, Clock, AlertCircle, Eye, Download, Trash2 } from 'lucide-react';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const Invoices = () => {
     const navigate = useNavigate();
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('');
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
     useEffect(() => {
         fetchInvoices();
@@ -42,19 +46,25 @@ const Invoices = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this invoice? This will unbill associated time entries.')) return;
+    const handleDeleteClick = (id) => {
+        setInvoiceToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!invoiceToDelete) return;
         try {
-            await api.delete(`/invoices/${id}`);
+            await api.delete(`/invoices/${invoiceToDelete}`);
+            toast.success('Invoice deleted successfully');
             fetchInvoices();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error deleting invoice');
+            toast.error(err.response?.data?.message || 'Error deleting invoice');
         }
     };
 
     const handleExportCSV = () => {
         if (invoices.length === 0) {
-            alert('No invoices found to export.');
+            toast.error('No invoices found to export.');
             return;
         }
 
@@ -86,12 +96,12 @@ const Invoices = () => {
 
     return (
         <div className="page-wrapper animate-fade-in">
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
                 <div>
                     <h1 className="page-title">Invoices</h1>
                     <p className="page-subtitle">Billing and payment history for your clients.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <button onClick={handleExportCSV} className="btn-secondary" title="Export as CSV">
                         <Download size={18} />
                     </button>
@@ -103,13 +113,17 @@ const Invoices = () => {
             </div>
 
             {/* Quick Filters */}
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
                 {['', 'DRAFT', 'SENT', 'PAID', 'OVERDUE'].map(status => (
                     <button
                         key={status}
                         className={`btn-secondary ${filterStatus === status ? 'active' : ''}`}
                         onClick={() => setFilterStatus(status)}
-                        style={filterStatus === status ? { background: 'rgba(79, 209, 197, 0.1)', color: 'var(--accent-primary)', borderColor: 'var(--accent-primary)' } : {}}
+                        style={{
+                            ...(filterStatus === status ? { background: 'rgba(79, 209, 197, 0.1)', color: 'var(--accent-primary)', borderColor: 'var(--accent-primary)' } : {}),
+                            flex: '1 1 auto',
+                            justifyContent: 'center'
+                        }}
                     >
                         {status || 'All'}
                     </button>
@@ -131,8 +145,8 @@ const Invoices = () => {
                     </button>
                 </div>
             ) : (
-                <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                    <table className="data-table">
+                <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+                    <table className="data-table" style={{ minWidth: '800px' }}>
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
@@ -174,7 +188,7 @@ const Invoices = () => {
                                                 <Download size={16} />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(inv.id)}
+                                                onClick={() => handleDeleteClick(inv.id)}
                                                 className="icon-btn danger"
                                                 title="Delete"
                                                 disabled={inv.status === 'PAID'}
@@ -189,6 +203,14 @@ const Invoices = () => {
                     </table>
                 </div>
             )}
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Invoice"
+                message="Are you sure you want to delete this invoice? This will unbill all associated time entries."
+                confirmText="Delete Invoice"
+            />
         </div>
     );
 };

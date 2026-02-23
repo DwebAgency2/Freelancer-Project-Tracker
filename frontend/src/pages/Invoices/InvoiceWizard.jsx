@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, Plus, Trash2, FileText, CheckCircle2, Clock, DollarSign } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Plus, Trash2, FileText, CheckCircle2, Clock, DollarSign, LayoutDashboard } from 'lucide-react';
 import api from '../../services/api';
 
 const InvoiceWizard = () => {
@@ -132,32 +132,35 @@ const InvoiceWizard = () => {
                 </div>
             </div>
 
-            <div className="card" style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div className="card animate-slide-up" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2.5rem' }}>
                 {step === 1 && (
-                    <div className="animate-slide-up">
-                        <h2 style={{ marginBottom: '1.5rem' }}>Step 1: Select Client</h2>
-                        <div className="form-group">
-                            <label>Choose a client to invoice</label>
-                            <div className="grid-list" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}>
-                                {clients.map(client => (
-                                    <div
-                                        key={client.id}
-                                        className={`card selectable-card ${selectedClientId === client.id ? 'selected' : ''}`}
-                                        onClick={() => setSelectedClientId(client.id)}
-                                    >
-                                        <h3 style={{ fontSize: '1.125rem' }}>{client.name}</h3>
-                                        <p style={{ color: '#64748b', fontSize: '0.875rem' }}>{client.company || 'Individual'}</p>
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="animate-fade-in">
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Step 1: Target Entity</h2>
+                            <p className="text-secondary">Identify the business partner for this invoice cycle.</p>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
+
+                        <div className="grid-list" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                            {clients.map(client => (
+                                <div
+                                    key={client.id}
+                                    className={`card selectable-card ${selectedClientId === client.id ? 'selected' : ''}`}
+                                    onClick={() => setSelectedClientId(client.id)}
+                                    style={{ padding: '1.5rem' }}
+                                >
+                                    <h3 style={{ fontSize: '1.125rem', marginBottom: '0.25rem' }}>{client.name}</h3>
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{client.company || 'Private Entity'}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', borderTop: '1px solid var(--border-glass)', paddingTop: '1.5rem' }}>
                             <button
                                 className="btn-primary"
                                 disabled={!selectedClientId}
                                 onClick={() => setStep(2)}
                             >
-                                <span>Next: Billable Work</span>
+                                <span>Continue to Billing</span>
                                 <ChevronRight size={18} />
                             </button>
                         </div>
@@ -165,26 +168,30 @@ const InvoiceWizard = () => {
                 )}
 
                 {step === 2 && (
-                    <div className="animate-slide-up">
-                        <h2 style={{ marginBottom: '1.5rem' }}>Step 2: Line Items</h2>
+                    <div className="animate-fade-in">
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Step 2: Operational Items</h2>
+                            <p className="text-secondary">Select synchronized work logs or add manual service entries.</p>
+                        </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '3rem' }}>
                             <div>
-                                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                                    <Clock size={18} style={{ color: 'var(--primary)' }} />
-                                    Unbilled Time Entries
+                                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                    <Clock size={16} className="text-accent" />
+                                    Synchronized Work Logs
                                 </h4>
-                                {loading ? <p>Loading entries...</p> : unbilledEntries.length === 0 ? <p style={{ color: '#64748b' }}>No unbilled entries found.</p> : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                {loading ? <p className="text-muted">Fetching entries...</p> : unbilledEntries.length === 0 ? <p className="text-muted">No pending entries detected.</p> : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                         {unbilledEntries.map(entry => (
                                             <div
                                                 key={entry.id}
                                                 className={`card selectable-small-card ${selectedEntryIds.includes(entry.id) ? 'selected' : ''}`}
                                                 onClick={() => handleToggleEntry(entry)}
+                                                style={{ padding: '1rem' }}
                                             >
-                                                <div style={{ fontWeight: 500 }}>{entry.description || 'Billable work'}</div>
-                                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                                                    {new Date(entry.date).toLocaleDateString()} • {(entry.duration_minutes / 60).toFixed(1)}h • ${entry.billing_rate}/hr
+                                                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{entry.description || 'Base Consultation'}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                    {new Date(entry.date).toLocaleDateString()} • <span className="text-accent">{(entry.duration_minutes / 60).toFixed(1)}h</span> • ${entry.billing_rate}/hr
                                                 </div>
                                             </div>
                                         ))}
@@ -193,70 +200,72 @@ const InvoiceWizard = () => {
                             </div>
 
                             <div>
-                                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                                    <FileText size={18} style={{ color: 'var(--primary)' }} />
-                                    Invoice Line Items
+                                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                    <FileText size={16} className="text-accent" />
+                                    Invoice Structure
                                 </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                     {lineItems.map((item, index) => (
-                                        <div key={index} className="card" style={{ padding: '0.75rem', borderStyle: 'dashed' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <div key={index} className="card" style={{ padding: '1.25rem', borderStyle: 'dashed', background: 'rgba(255,255,255,0.01)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', gap: '1rem' }}>
                                                 <input
                                                     className="inline-input"
-                                                    placeholder="Description"
+                                                    placeholder="Task description..."
                                                     value={item.description}
                                                     onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                                                    style={{ fontWeight: 500, flex: 1 }}
+                                                    style={{ fontWeight: 600, flex: 1, fontSize: '1rem', color: 'white' }}
                                                 />
-                                                <button onClick={() => handleRemoveItem(index)} className="icon-btn danger">
+                                                <button onClick={() => handleRemoveItem(index)} className="icon-btn danger" style={{ padding: '0.5rem' }}>
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
-                                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <div style={{ display: 'flex', gap: '1.5rem' }}>
                                                 <div style={{ flex: 1 }}>
-                                                    <label style={{ fontSize: '0.75rem' }}>Qty/Hrs</label>
+                                                    <label className="stats-label" style={{ fontSize: '0.625rem' }}>Units</label>
                                                     <input
                                                         type="number"
-                                                        className="inline-input"
+                                                        className="inline-input text-accent"
                                                         value={item.quantity}
                                                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                        style={{ fontWeight: 700 }}
                                                     />
                                                 </div>
                                                 <div style={{ flex: 1 }}>
-                                                    <label style={{ fontSize: '0.75rem' }}>Rate</label>
+                                                    <label className="stats-label" style={{ fontSize: '0.625rem' }}>Rate ($)</label>
                                                     <input
                                                         type="number"
-                                                        className="inline-input"
+                                                        className="inline-input text-accent"
                                                         value={item.rate}
                                                         onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                                                        style={{ fontWeight: 700 }}
                                                     />
                                                 </div>
                                                 <div style={{ flex: 1, textAlign: 'right' }}>
-                                                    <label style={{ fontSize: '0.75rem' }}>Amount</label>
-                                                    <div style={{ fontWeight: 600 }}>${(item.quantity * item.rate).toFixed(2)}</div>
+                                                    <label className="stats-label" style={{ fontSize: '0.625rem' }}>Subtotal</label>
+                                                    <div style={{ fontWeight: 800, color: 'white' }}>${(item.quantity * item.rate).toFixed(2)}</div>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
-                                    <button onClick={handleAddManualItem} className="btn-secondary" style={{ width: '100%', py: '0.5rem' }}>
+                                    <button onClick={handleAddManualItem} className="btn-secondary" style={{ width: '100%', padding: '1rem', borderStyle: 'dashed' }}>
                                         <Plus size={16} />
-                                        <span>Add Manual Item</span>
+                                        <span>Append Manual Item</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem', borderTop: '1px solid var(--border-glass)', paddingTop: '1.5rem' }}>
                             <button className="btn-secondary" onClick={() => setStep(1)}>
                                 <ChevronLeft size={18} />
-                                Back
+                                Back to Entity
                             </button>
                             <button
                                 className="btn-primary"
                                 disabled={lineItems.length === 0}
                                 onClick={() => setStep(3)}
                             >
-                                <span>Next: Review & Totals</span>
+                                <span>Preview & Finalize</span>
                                 <ChevronRight size={18} />
                             </button>
                         </div>
@@ -264,87 +273,95 @@ const InvoiceWizard = () => {
                 )}
 
                 {step === 3 && (
-                    <div className="animate-slide-up">
-                        <h2 style={{ marginBottom: '1.5rem' }}>Step 3: Review & Finalize</h2>
+                    <div className="animate-fade-in">
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Step 3: Protocol Review</h2>
+                            <p className="text-secondary">Verify financial parameters and finalize the document.</p>
+                        </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
-                            <div className="form-grid">
-                                <div className="form-group">
-                                    <label>Invoice Date</label>
-                                    <input
-                                        type="date"
-                                        value={invoiceData.invoice_date}
-                                        onChange={(e) => setInvoiceData({ ...invoiceData, invoice_date: e.target.value })}
-                                    />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '3rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    <div className="form-group">
+                                        <label>Issue Date</label>
+                                        <input
+                                            type="date"
+                                            className="styled-input"
+                                            value={invoiceData.invoice_date}
+                                            onChange={(e) => setInvoiceData({ ...invoiceData, invoice_date: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Tactical Deadline (Due)</label>
+                                        <input
+                                            type="date"
+                                            className="styled-input"
+                                            value={invoiceData.due_date}
+                                            onChange={(e) => setInvoiceData({ ...invoiceData, due_date: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="form-group">
-                                    <label>Due Date</label>
-                                    <input
-                                        type="date"
-                                        value={invoiceData.due_date}
-                                        onChange={(e) => setInvoiceData({ ...invoiceData, due_date: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group full-width">
-                                    <label>Notes (shown on invoice)</label>
+                                    <label>Operation Notes</label>
                                     <textarea
-                                        rows="3"
-                                        placeholder="Thanks for your business!"
+                                        className="styled-textarea"
+                                        rows="4"
+                                        placeholder="Add terms, bank details, or project completion notes..."
                                         value={invoiceData.notes}
                                         onChange={(e) => setInvoiceData({ ...invoiceData, notes: e.target.value })}
                                     />
                                 </div>
                             </div>
 
-                            <div className="card" style={{ background: '#f8fafc', padding: '1.5rem' }}>
-                                <h4 style={{ marginBottom: '1rem' }}>Summary</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <div className="card" style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', border: '1px solid var(--accent-primary-glow)' }}>
+                                <h4 style={{ marginBottom: '1.5rem', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>Financial Summary</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Subtotal</span>
-                                        <span>${calculateSubtotal().toFixed(2)}</span>
+                                        <span className="text-secondary">Gross Subtotal</span>
+                                        <span style={{ fontWeight: 600 }}>${calculateSubtotal().toFixed(2)}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: '#64748b' }}>Tax Rate (%)</span>
+                                        <span className="text-secondary">Tax Factor (%)</span>
                                         <input
                                             type="number"
-                                            className="inline-input"
-                                            style={{ width: '60px', textAlign: 'right' }}
+                                            className="inline-input text-accent"
+                                            style={{ width: '80px', textAlign: 'right', fontWeight: 700 }}
                                             value={invoiceData.tax_rate}
                                             onChange={(e) => setInvoiceData({ ...invoiceData, tax_rate: e.target.value })}
                                         />
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: '#64748b' }}>Discount ($)</span>
+                                        <span className="text-secondary">Adjustment / Discount ($)</span>
                                         <input
                                             type="number"
-                                            className="inline-input"
-                                            style={{ width: '80px', textAlign: 'right' }}
+                                            className="inline-input text-accent"
+                                            style={{ width: '100px', textAlign: 'right', fontWeight: 700 }}
                                             value={invoiceData.discount_amount}
                                             onChange={(e) => setInvoiceData({ ...invoiceData, discount_amount: e.target.value })}
                                         />
                                     </div>
-                                    <hr style={{ margin: '0.5rem 0', borderColor: '#e2e8f0' }} />
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>
-                                        <span>Total</span>
-                                        <span>${calculateTotal().toFixed(2)}</span>
+                                    <div style={{ margin: '0.5rem 0', borderTop: '1px solid var(--border-glass)' }} />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.5rem', fontWeight: 800 }}>
+                                        <span className="text-secondary">Net Payable</span>
+                                        <span className="text-accent">${calculateTotal().toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem', borderTop: '1px solid var(--border-glass)', paddingTop: '1.5rem' }}>
                             <button className="btn-secondary" onClick={() => setStep(2)}>
                                 <ChevronLeft size={18} />
-                                Back
+                                Back to Structure
                             </button>
                             <button
                                 className="btn-primary"
                                 disabled={loading}
                                 onClick={handleCreateInvoice}
-                                style={{ background: '#10b981' }}
+                                style={{ boxShadow: '0 0 20px var(--accent-primary-glow)' }}
                             >
                                 <FileText size={18} />
-                                <span>{loading ? 'Generating...' : 'Create Invoice'}</span>
+                                <span>{loading ? 'Initializing...' : 'Confirm & Finalize Invoice'}</span>
                             </button>
                         </div>
                     </div>

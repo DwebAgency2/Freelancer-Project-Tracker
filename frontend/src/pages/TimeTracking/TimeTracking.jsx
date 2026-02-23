@@ -5,12 +5,15 @@ import {
     Shield, ShieldCheck, Activity, Target, Plus, Search, Building
 } from 'lucide-react';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
 import Timer from '../../components/Timer';
 import TimeEntryForm from '../../components/TimeEntryForm';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const TimeTracking = () => {
     const [timeData, setTimeData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [stats, setStats] = useState({
         total_hours: 0,
         this_week: 0,
@@ -23,6 +26,9 @@ const TimeTracking = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProjectFilter, setSelectedProjectFilter] = useState('ALL');
     const [projects, setProjects] = useState([]);
+    const [submitting, setSubmitting] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [entryToDelete, setEntryToDelete] = useState(null);
 
     useEffect(() => {
         fetchTimeData();
@@ -32,6 +38,7 @@ const TimeTracking = () => {
     const fetchTimeData = async () => {
         try {
             setLoading(true);
+            setError(null);
             const response = await api.get('/time-entries');
             const entries = response.data.entries;
             setTimeData(entries);
@@ -45,6 +52,7 @@ const TimeTracking = () => {
             });
         } catch (err) {
             console.error('Error fetching time data:', err);
+            setError('Failed to sync time logs. Please check your connection.');
         } finally {
             setLoading(false);
         }
@@ -66,38 +74,50 @@ const TimeTracking = () => {
 
     const handleEditEntry = (log) => {
         if (log.is_billed) {
-            alert('Cannot edit a billed work session.');
+            toast.error('Cannot edit a billed work session.');
             return;
         }
         setEditingLog(log);
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id, isBilled) => {
+    const handleDeleteClick = (id, isBilled) => {
         if (isBilled) {
-            alert('Cannot delete a billed work session.');
+            toast.error('Cannot delete a billed work session');
             return;
         }
-        if (!window.confirm('Delete this work session?')) return;
+        setEntryToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!entryToDelete) return;
         try {
-            await api.delete(`/time-entries/${id}`);
+            await api.delete(`/time-entries/${entryToDelete}`);
+            toast.success('Session deleted');
             fetchTimeData();
         } catch (err) {
-            alert('Failed to delete log.');
+            toast.error('Failed to delete log');
         }
     };
 
     const handleSubmit = async (formData) => {
         try {
+            setSubmitting(true);
             if (editingLog) {
                 await api.put(`/time-entries/${editingLog.id}`, formData);
+                toast.success('Time entry updated');
             } else {
                 await api.post('/time-entries', formData);
+                toast.success('Time entry added');
             }
             setIsModalOpen(false);
             fetchTimeData();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error saving time record');
+            const msg = err.response?.data?.message || 'Error saving time record';
+            toast.error(msg);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -110,7 +130,7 @@ const TimeTracking = () => {
 
     const handleExportCSV = () => {
         if (filteredLogs.length === 0) {
-            alert('No sessions found to export.');
+            toast.error('No sessions found to export.');
             return;
         }
 
@@ -141,12 +161,12 @@ const TimeTracking = () => {
 
     return (
         <div className="page-wrapper animate-fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap', gap: '2rem' }}>
                 <div>
                     <h1 className="page-title">Time Tracking</h1>
                     <p className="page-subtitle">Accurately record billable hours to ensure precision in your invoicing.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', maxWidth: 'fit-content' }}>
                     <button onClick={handleExportCSV} className="btn-secondary" title="Export as CSV">
                         <Download size={18} />
                     </button>
@@ -154,7 +174,7 @@ const TimeTracking = () => {
                         <Plus size={18} />
                         <span>Manual Entry</span>
                     </button>
-                    <div style={{ display: 'flex', gap: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1.25rem', borderRadius: '14px', border: '1px solid var(--border-glass)' }}>
+                    <div style={{ display: 'flex', gap: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1.25rem', borderRadius: '14px', border: '1px solid var(--border-glass)', flex: 1, justifyContent: 'center' }}>
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{stats.total_hours}h</div>
                             <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Billable</div>
@@ -168,7 +188,7 @@ const TimeTracking = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) 1.5fr', gap: '3rem' }}>
+            <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) 1.5fr', gap: '3rem' }}>
                 {/* Timer Section */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     <div className="card" style={{ padding: '3rem 2rem', background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -193,8 +213,8 @@ const TimeTracking = () => {
                 {/* Session Records */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     {/* Filters */}
-                    <div className="card" style={{ padding: '1rem', display: 'flex', gap: '1rem', background: 'rgba(255,255,255,0.03)' }}>
-                        <div className="search-bar-modern" style={{ flex: 1 }}>
+                    <div className="card" style={{ padding: '1rem', display: 'flex', gap: '1rem', background: 'rgba(255,255,255,0.03)', flexWrap: 'wrap' }}>
+                        <div className="search-bar-modern" style={{ flex: '1 1 200px' }}>
                             <Search size={18} className="text-secondary" />
                             <input
                                 type="text"
@@ -207,7 +227,7 @@ const TimeTracking = () => {
                         <select
                             value={selectedProjectFilter}
                             onChange={(e) => setSelectedProjectFilter(e.target.value)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', padding: '0.5rem 1rem', borderRadius: '10px', color: 'white', fontSize: '0.875rem', minWidth: '150px' }}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', padding: '0.5rem 1rem', borderRadius: '10px', color: 'white', fontSize: '0.875rem', flex: '1 1 150px' }}
                         >
                             <option value="ALL">All Projects</option>
                             {projects.map(p => (
@@ -226,9 +246,29 @@ const TimeTracking = () => {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {loading ? (
-                                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Loading session data...</p>
-                            ) : filteredLogs.length > 0 ? (
-                                filteredLogs.slice(0, 10).map(log => (
+                                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Syncing session data...</p>
+                            ) : error ? (
+                                <div className="empty-state">
+                                    <AlertCircle size={48} className="empty-icon" style={{ color: '#ef4444' }} />
+                                    <h3>Sync Interrupted</h3>
+                                    <p>{error}</p>
+                                    <button onClick={fetchTimeData} className="btn-secondary">
+                                        Retry Sync
+                                    </button>
+                                </div>
+                            ) : filteredLogs.length === 0 ? (
+                                <div className="empty-state">
+                                    <Clock size={48} className="empty-icon" />
+                                    <h3>No work sessions found</h3>
+                                    <p>{searchTerm || selectedProjectFilter !== 'ALL' ? 'No entries match your current filters.' : 'Your timeline is clear. Start by logging a session.'}</p>
+                                    {!searchTerm && selectedProjectFilter === 'ALL' && (
+                                        <button onClick={handleAddEntry} className="btn-primary">
+                                            Log Your First Session
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                filteredLogs.slice(0, 50).map(log => (
                                     <div key={log.id} style={{
                                         padding: '1.25rem',
                                         borderRadius: '16px',
@@ -269,7 +309,7 @@ const TimeTracking = () => {
                                                     <Edit2 size={14} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(log.id, log.is_billed)}
+                                                    onClick={() => handleDeleteClick(log.id, log.is_billed)}
                                                     className="icon-btn danger"
                                                     style={{ width: '32px', height: '32px', opacity: log.is_billed ? 0.3 : 1, cursor: log.is_billed ? 'not-allowed' : 'pointer' }}
                                                     title={log.is_billed ? "Cannot delete billed session" : "Delete Session"}
@@ -280,11 +320,6 @@ const TimeTracking = () => {
                                         </div>
                                     </div>
                                 ))
-                            ) : (
-                                <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                                    <Clock size={48} style={{ color: 'var(--text-muted)', opacity: 0.2, marginBottom: '1rem' }} />
-                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No work sessions found matching your criteria.</p>
-                                </div>
                             )}
                         </div>
                     </div>
@@ -296,6 +331,15 @@ const TimeTracking = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
                 initialData={editingLog}
+                submitting={submitting}
+            />
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Session"
+                message="Are you sure you want to delete this work session? This action cannot be undone."
+                confirmText="Delete Session"
             />
         </div>
     );

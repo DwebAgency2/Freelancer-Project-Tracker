@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Mail, Phone, Building, Edit2, Trash2, ExternalLink, User } from 'lucide-react';
+import { Plus, Search, Filter, Mail, Phone, MapPin, MoreVertical, Edit2, Trash2, ExternalLink, Building, User } from 'lucide-react';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
 import ClientForm from '../../components/ClientForm';
 import { Link } from 'react-router-dom';
+import Skeleton from '../../components/Skeleton';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const Clients = () => {
     const [clients, setClients] = useState([]);
@@ -11,6 +14,9 @@ const Clients = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
     const [error, setError] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [clientToDelete, setClientToDelete] = useState(null);
 
     useEffect(() => {
         fetchClients();
@@ -40,27 +46,39 @@ const Clients = () => {
         setIsModalOpen(true);
     };
 
-    const handleDeleteClient = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this client? This will affect associated projects and invoices.')) return;
+    const handleDeleteClick = (id) => {
+        setClientToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!clientToDelete) return;
         try {
-            await api.delete(`/clients/${id}`);
-            setClients(clients.filter(c => c.id !== id));
+            await api.delete(`/clients/${clientToDelete}`);
+            setClients(clients.filter(c => c.id !== clientToDelete));
+            toast.success('Client deleted successfully');
         } catch (err) {
-            alert('Failed to delete client.');
+            console.error('Error deleting client:', err);
+            toast.error('Failed to delete client');
         }
     };
 
     const handleSubmit = async (formData) => {
         try {
+            setSubmitting(true);
             if (editingClient) {
                 await api.put(`/clients/${editingClient.id}`, formData);
+                toast.success('Client updated successfully');
             } else {
                 await api.post('/clients', formData);
+                toast.success('Client added successfully');
             }
             setIsModalOpen(false);
             fetchClients();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error saving client');
+            toast.error(err.response?.data?.message || 'Error saving client');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -103,10 +121,15 @@ const Clients = () => {
                     <button onClick={fetchClients} className="btn-secondary" style={{ marginTop: '1rem' }}>Retry Sync</button>
                 </div>
             ) : filteredClients.length === 0 ? (
-                <div className="card" style={{ textAlign: 'center', padding: '4rem' }}>
-                    <Building size={48} className="text-secondary" style={{ marginBottom: '1.5rem', opacity: 0.5 }} />
-                    <h3 style={{ fontSize: '1.25rem' }}>No clients detected</h3>
-                    <p style={{ color: 'var(--text-secondary)' }}>{searchTerm ? 'Try a more generic search term.' : 'Bridge the gap by adding your first client.'}</p>
+                <div className="empty-state card">
+                    <Building size={48} className="empty-icon" />
+                    <h3>No clients detected</h3>
+                    <p>{searchTerm ? `No results for "${searchTerm}". Try a different search.` : 'Bridge the gap by adding your first client.'}</p>
+                    {!searchTerm && (
+                        <button onClick={handleAddClient} className="btn-primary">
+                            Add Your First Client
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="grid-list" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
@@ -127,7 +150,7 @@ const Clients = () => {
                                         <button onClick={() => handleEditClient(client)} className="icon-btn" style={{ width: '32px', height: '32px' }}>
                                             <Edit2 size={14} />
                                         </button>
-                                        <button onClick={() => handleDeleteClient(client.id)} className="icon-btn danger" style={{ width: '32px', height: '32px' }}>
+                                        <button onClick={() => handleDeleteClick(client.id)} className="icon-btn danger" style={{ width: '32px', height: '32px' }}>
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
@@ -170,6 +193,15 @@ const Clients = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
                 initialData={editingClient}
+                submitting={submitting}
+            />
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Client"
+                message="Are you sure you want to delete this client? This will affect all associated projects and invoices."
+                confirmText="Delete Client"
             />
         </div>
     );

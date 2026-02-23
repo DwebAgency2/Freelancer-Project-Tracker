@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Search, Filter, Briefcase, Clock, DollarSign, Edit2, Trash2, Calendar, Users } from 'lucide-react';
+import { Plus, Search, Filter, MoreVertical, Clock, CheckCircle2, AlertCircle, Trash2, Calendar, Edit2, DollarSign } from 'lucide-react';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
+import { format } from 'date-fns';
 import ProjectForm from '../../components/ProjectForm';
+import Skeleton from '../../components/Skeleton';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const Projects = () => {
     const [searchParams] = useSearchParams();
@@ -15,6 +19,9 @@ const Projects = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [error, setError] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [projectToDelete, setProjectToDelete] = useState(null);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -62,27 +69,39 @@ const Projects = () => {
         setIsModalOpen(true);
     };
 
-    const handleDeleteProject = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this project?')) return;
+    const handleDeleteClick = (id) => {
+        setProjectToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!projectToDelete) return;
         try {
-            await api.delete(`/projects/${id}`);
-            setProjects(projects.filter(p => p.id !== id));
+            await api.delete(`/projects/${projectToDelete}`);
+            setProjects(projects.filter(p => p.id !== projectToDelete));
+            toast.success('Project deleted successfully');
         } catch (err) {
-            alert('Failed to delete project.');
+            console.error('Error deleting project:', err);
+            toast.error('Failed to delete project');
         }
     };
 
     const handleSubmit = async (formData) => {
         try {
+            setSubmitting(true);
             if (editingProject) {
                 await api.put(`/projects/${editingProject.id}`, formData);
+                toast.success('Project updated successfully!');
             } else {
                 await api.post('/projects', formData);
+                toast.success('Project created successfully!');
             }
             setIsModalOpen(false);
             fetchProjects();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error saving project');
+            toast.error(err.response?.data?.message || 'Error saving project');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -96,7 +115,7 @@ const Projects = () => {
 
     return (
         <div className="page-wrapper animate-fade-in">
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
                 <div>
                     <h1 className="page-title">Projects</h1>
                     <p className="page-subtitle">Track your project progress, budgets, and status.</p>
@@ -108,7 +127,7 @@ const Projects = () => {
             </div>
 
             <div className="card" style={{ gap: '1rem', flexWrap: 'wrap', display: 'flex', marginBottom: '2.5rem', background: 'rgba(255,255,255,0.03)' }}>
-                <div className="search-bar-modern" style={{ flex: 1, minWidth: '300px' }}>
+                <div className="search-bar-modern" style={{ flex: '1 1 250px', minWidth: '0' }}>
                     <Search size={20} className="text-secondary" />
                     <input
                         type="text"
@@ -119,7 +138,7 @@ const Projects = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Users size={18} className="text-secondary" />
+                        <Filter size={18} className="text-secondary" />
                         <select
                             value={clientFilter}
                             onChange={(e) => setClientFilter(e.target.value)}
@@ -150,9 +169,21 @@ const Projects = () => {
             </div>
 
             {loading ? (
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Loading projects...</p>
+                <div className="grid-list">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Skeleton width="60%" height="24px" />
+                                <Skeleton width="80px" height="24px" borderRadius="12px" />
+                            </div>
+                            <Skeleton height="16px" />
+                            <Skeleton height="16px" width="80%" />
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                <Skeleton width="30%" height="16px" />
+                                <Skeleton width="30%" height="16px" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : error ? (
                 <div className="error-state card">
@@ -161,11 +192,11 @@ const Projects = () => {
                 </div>
             ) : filteredProjects.length === 0 ? (
                 <div className="empty-state card">
-                    <Briefcase size={48} className="empty-icon" />
+                    <Clock size={48} className="empty-icon" />
                     <h3>No projects found</h3>
                     <p>{searchTerm || statusFilter !== 'ALL' ? 'No projects match your current filters.' : 'Start your first project to begin tracking your work.'}</p>
                     {(!searchTerm && statusFilter === 'ALL') && (
-                        <button onClick={handleAddProject} className="btn-primary mt-4">
+                        <button onClick={handleAddProject} className="btn-primary">
                             Create Project
                         </button>
                     )}
@@ -217,7 +248,7 @@ const Projects = () => {
                                 <button onClick={() => handleEditProject(project)} className="icon-btn" title="Edit">
                                     <Edit2 size={16} />
                                 </button>
-                                <button onClick={() => handleDeleteProject(project.id)} className="icon-btn danger" title="Delete">
+                                <button onClick={() => handleDeleteClick(project.id)} className="icon-btn danger" title="Delete">
                                     <Trash2 size={16} />
                                 </button>
                             </div>
@@ -232,6 +263,15 @@ const Projects = () => {
                 onSubmit={handleSubmit}
                 initialData={editingProject}
                 preSelectedClientId={searchParams.get('client_id')}
+                submitting={submitting}
+            />
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Project"
+                message="Are you sure you want to delete this project? This will permanentely remove all associated data."
+                confirmText="Delete Project"
             />
         </div>
     );

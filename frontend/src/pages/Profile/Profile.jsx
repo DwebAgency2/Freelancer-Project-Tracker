@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { User, Mail, Building, Phone, MapPin, CreditCard, Upload } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Profile = () => {
     const { user, updateProfile } = useAuth();
@@ -73,8 +74,10 @@ const Profile = () => {
 
             updateProfile(profileRes.data.user);
             setMessage('Profile updated successfully!');
+            toast.success('Profile updated successfully!');
         } catch (err) {
             setMessage('Error updating profile. Please try again.');
+            toast.error('Error updating profile');
         } finally {
             setLoading(false);
         }
@@ -82,7 +85,7 @@ const Profile = () => {
 
     return (
         <div className="animate-fade-in">
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
                 <div>
                     <h1 className="page-title">Settings & Profile</h1>
                     <p className="page-subtitle">Configure your business identity and invoicing defaults.</p>
@@ -96,7 +99,7 @@ const Profile = () => {
             )}
 
             <form onSubmit={handleSubmit} className="profile-form">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                         {/* Business Information */}
@@ -114,7 +117,7 @@ const Profile = () => {
                                     <label>Contact Email (Secure)</label>
                                     <input type="email" value={user?.email || ''} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <div className="form-group">
                                         <label>Direct Phone</label>
                                         <input type="text" name="phone" value={formData.phone} onChange={handleChange} />
@@ -137,11 +140,12 @@ const Profile = () => {
                                 <Upload size={18} className="text-accent" />
                                 Brand Asset (Logo)
                             </h3>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
                                 <div style={{
                                     width: '100px', height: '100px', borderRadius: '12px',
                                     background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border-glass)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                                    flexShrink: 0
                                 }}>
                                     {logoPreview ? (
                                         <img src={logoPreview} alt="Logo Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
@@ -149,8 +153,8 @@ const Profile = () => {
                                         <Building size={32} style={{ opacity: 0.2 }} />
                                     )}
                                 </div>
-                                <div>
-                                    <label className="btn-secondary" style={{ cursor: 'pointer' }}>
+                                <div style={{ flex: '1 1 200px' }}>
+                                    <label className="btn-secondary" style={{ cursor: 'pointer', width: '100%', justifyContent: 'center' }}>
                                         Upload New Asset
                                         <input type="file" onChange={handleLogoChange} accept="image/*" hidden />
                                     </label>
@@ -168,7 +172,7 @@ const Profile = () => {
                                 Billing & Compliance
                             </h3>
                             <div style={{ display: 'grid', gap: '1.25rem' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <div className="form-group">
                                         <label>Base Hourly Rate ($)</label>
                                         <input type="number" name="default_hourly_rate" value={formData.default_hourly_rate} onChange={handleChange} />

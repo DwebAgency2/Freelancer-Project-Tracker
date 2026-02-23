@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
+const ClientForm = ({ isOpen, onClose, onSubmit, initialData, submitting }) => {
     const [formData, setFormData] = useState({
         name: '',
         company: '',
@@ -13,6 +13,7 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         payment_terms: '',
         notes: '',
     });
+    const [localErrors, setLocalErrors] = useState({});
 
     useEffect(() => {
         if (initialData) {
@@ -42,6 +43,19 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const errors = {};
+        if (formData.default_hourly_rate < 0) {
+            errors.default_hourly_rate = 'Rate must be positive';
+        }
+        if (formData.email && !formData.email.includes('@')) {
+            errors.email = 'Please enter a valid email';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setLocalErrors(errors);
+            return;
+        }
+        setLocalErrors({});
         onSubmit(formData);
     };
 
@@ -63,6 +77,7 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="text"
                                 name="name"
+                                className="styled-input"
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
@@ -74,6 +89,7 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="text"
                                 name="company"
+                                className="styled-input"
                                 value={formData.company}
                                 onChange={handleChange}
                                 placeholder="Acme Dynamics"
@@ -84,16 +100,19 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="email"
                                 name="email"
+                                className="styled-input"
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="client@nexus.com"
                             />
+                            {localErrors.email && <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>{localErrors.email}</p>}
                         </div>
                         <div className="form-group">
                             <label>Direct Line / Phone</label>
                             <input
                                 type="text"
                                 name="phone"
+                                className="styled-input"
                                 value={formData.phone}
                                 onChange={handleChange}
                             />
@@ -103,6 +122,7 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="text"
                                 name="tax_id"
+                                className="styled-input"
                                 value={formData.tax_id}
                                 onChange={handleChange}
                             />
@@ -112,16 +132,19 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <input
                                 type="number"
                                 name="default_hourly_rate"
+                                className="styled-input"
                                 value={formData.default_hourly_rate}
                                 onChange={handleChange}
                                 step="0.01"
                             />
+                            {localErrors.default_hourly_rate && <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>{localErrors.default_hourly_rate}</p>}
                         </div>
                         <div className="form-group">
                             <label>Payment Cycle</label>
                             <input
                                 type="text"
                                 name="payment_terms"
+                                className="styled-input"
                                 value={formData.payment_terms}
                                 onChange={handleChange}
                                 placeholder="e.g. Net 15"
@@ -131,6 +154,7 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <label>Physical / Billing Address</label>
                             <textarea
                                 name="address"
+                                className="styled-textarea"
                                 value={formData.address}
                                 onChange={handleChange}
                                 rows="2"
@@ -140,6 +164,7 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <label>Internal Strategy Notes</label>
                             <textarea
                                 name="notes"
+                                className="styled-textarea"
                                 value={formData.notes}
                                 onChange={handleChange}
                                 rows="2"
@@ -151,8 +176,15 @@ const ClientForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         <button type="button" onClick={onClose} className="btn-secondary">
                             Cancel
                         </button>
-                        <button type="submit" className="btn-primary">
-                            <span>{initialData ? 'Synchronize Updates' : 'Initialize Client'}</span>
+                        <button type="submit" className="btn-primary" disabled={submitting}>
+                            {submitting ? (
+                                <>
+                                    <div className="btn-spinner"></div>
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <span>{initialData ? 'Synchronize Updates' : 'Initialize Client'}</span>
+                            )}
                         </button>
                     </div>
                 </form>

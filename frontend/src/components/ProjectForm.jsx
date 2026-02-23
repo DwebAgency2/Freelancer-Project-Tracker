@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, DollarSign, Target } from 'lucide-react';
 import api from '../services/api';
 
-const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClientId }) => {
+const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClientId, submitting }) => {
     const [clients, setClients] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
@@ -15,6 +15,7 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
         start_date: '',
         deadline: '',
     });
+    const [localErrors, setLocalErrors] = useState({});
 
     useEffect(() => {
         fetchClients();
@@ -60,6 +61,22 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const errors = {};
+        if (formData.budget_type === 'FIXED' && formData.estimated_budget < 0) {
+            errors.estimated_budget = 'Budget must be positive';
+        }
+        if (formData.budget_type === 'HOURLY' && formData.billing_rate < 0) {
+            errors.billing_rate = 'Rate must be positive';
+        }
+        if (formData.start_date && formData.deadline && new Date(formData.deadline) < new Date(formData.start_date)) {
+            errors.deadline = 'Deadline cannot be before start date';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setLocalErrors(errors);
+            return;
+        }
+        setLocalErrors({});
         onSubmit(formData);
     };
 
@@ -77,7 +94,10 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
                 <form onSubmit={handleSubmit} style={{ marginTop: '1.5rem' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                         <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                            <label>Project Title*</label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Target size={14} className="text-secondary" />
+                                Project Title*
+                            </label>
                             <input
                                 type="text"
                                 name="name"
@@ -85,60 +105,74 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
                                 onChange={handleChange}
                                 required
                                 placeholder="e.g. Brand Identity Overhaul"
+                                className="styled-input"
                             />
                         </div>
 
                         <div className="form-group">
                             <label>Client Entity*</label>
-                            <select
-                                name="client_id"
-                                value={formData.client_id}
-                                onChange={handleChange}
-                                required
-                                style={{ width: '100%' }}
-                            >
-                                <option value="" style={{ background: '#0d1117' }}>Select a business partner</option>
-                                {clients.map((client) => (
-                                    <option key={client.id} value={client.id} style={{ background: '#0d1117' }}>
-                                        {client.name} {client.company ? `(${client.company})` : ''}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="select-wrapper">
+                                <select
+                                    name="client_id"
+                                    value={formData.client_id}
+                                    onChange={handleChange}
+                                    required
+                                    className="styled-select"
+                                >
+                                    <option value="">Select a business partner</option>
+                                    {clients && clients.length > 0 ? (
+                                        clients.map((client) => (
+                                            <option key={client.id} value={client.id}>
+                                                {client.name} {client.company ? `(${client.company})` : ''}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>No clients detected</option>
+                                    )}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label>Current Status</label>
-                            <select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                                style={{ width: '100%' }}
-                            >
-                                <option value="POTENTIAL" style={{ background: '#0d1117' }}>Potential</option>
-                                <option value="ACTIVE" style={{ background: '#0d1117' }}>Active Engagement</option>
-                                <option value="COMPLETED" style={{ background: '#0d1117' }}>Completed / Archived</option>
-                                <option value="ON_HOLD" style={{ background: '#0d1117' }}>On Ice / Deferred</option>
-                                <option value="CANCELLED" style={{ background: '#0d1117' }}>Terminated</option>
-                            </select>
+                            <div className="select-wrapper">
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                    className="styled-select"
+                                >
+                                    <option value="POTENTIAL">Potential</option>
+                                    <option value="ACTIVE">Active Engagement</option>
+                                    <option value="COMPLETED">Completed / Archived</option>
+                                    <option value="ON_HOLD">On Ice / Deferred</option>
+                                    <option value="CANCELLED">Terminated</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label>Budget Model</label>
-                            <select
-                                name="budget_type"
-                                value={formData.budget_type}
-                                onChange={handleChange}
-                                style={{ width: '100%' }}
-                            >
-                                <option value="FIXED" style={{ background: '#0d1117' }}>Fixed Milestone / Project</option>
-                                <option value="HOURLY" style={{ background: '#0d1117' }}>Variable / Hourly Rate</option>
-                            </select>
+                            <div className="select-wrapper">
+                                <select
+                                    name="budget_type"
+                                    value={formData.budget_type}
+                                    onChange={handleChange}
+                                    className="styled-select"
+                                >
+                                    <option value="FIXED">Fixed Milestone / Project</option>
+                                    <option value="HOURLY">Variable / Hourly Rate</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div className="form-group">
                             {formData.budget_type === 'FIXED' ? (
                                 <>
-                                    <label>Total Estimated Value ($)</label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <DollarSign size={14} className="text-secondary" />
+                                        Total Estimated Value ($)
+                                    </label>
                                     <input
                                         type="number"
                                         name="estimated_budget"
@@ -146,11 +180,16 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
                                         onChange={handleChange}
                                         placeholder="0.00"
                                         step="0.01"
+                                        className="styled-input"
                                     />
+                                    {localErrors.estimated_budget && <p className="error-text">{localErrors.estimated_budget}</p>}
                                 </>
                             ) : (
                                 <>
-                                    <label>Hourly Synchronization Rate ($/hr)</label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <DollarSign size={14} className="text-secondary" />
+                                        Hourly Rate ($/hr)
+                                    </label>
                                     <input
                                         type="number"
                                         name="billing_rate"
@@ -158,32 +197,41 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
                                         onChange={handleChange}
                                         placeholder="0.00"
                                         step="0.01"
+                                        className="styled-input"
                                     />
+                                    {localErrors.billing_rate && <p className="error-text">{localErrors.billing_rate}</p>}
                                 </>
                             )}
                         </div>
 
                         <div className="form-group">
-                            <label>Execution Start</label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type="date"
-                                    name="start_date"
-                                    value={formData.start_date}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Calendar size={14} className="text-secondary" />
+                                Execution Start
+                            </label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                value={formData.start_date}
+                                onChange={handleChange}
+                                className="styled-input"
+                            />
                         </div>
 
                         <div className="form-group">
-                            <label>Strategic Deadline</label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Calendar size={14} className="text-secondary" />
+                                Strategic Deadline
+                            </label>
                             <div style={{ position: 'relative' }}>
                                 <input
                                     type="date"
                                     name="deadline"
                                     value={formData.deadline}
                                     onChange={handleChange}
+                                    className="styled-input"
                                 />
+                                {localErrors.deadline && <p className="error-text">{localErrors.deadline}</p>}
                             </div>
                         </div>
 
@@ -195,16 +243,24 @@ const ProjectForm = ({ isOpen, onClose, onSubmit, initialData, preSelectedClient
                                 onChange={handleChange}
                                 placeholder="Core objectives, deliverables, and technical parameters..."
                                 rows="3"
+                                className="styled-textarea"
                             ></textarea>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2.5rem', borderTop: '1px solid var(--border-glass)', paddingTop: '1.5rem' }}>
+                    <div className="modal-actions" style={{ marginTop: '2.5rem', borderTop: '1px solid var(--border-glass)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn-secondary">
-                            Abort
+                            Abort Launch
                         </button>
-                        <button type="submit" className="btn-primary">
-                            <span>{initialData ? 'Push Project Updates' : 'Confirm Launch'}</span>
+                        <button type="submit" className="btn-primary" disabled={submitting}>
+                            {submitting ? (
+                                <>
+                                    <div className="btn-spinner"></div>
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <span>{initialData ? 'Push Project Updates' : 'Confirm Launch'}</span>
+                            )}
                         </button>
                     </div>
                 </form>

@@ -263,4 +263,44 @@ router.put('/:id/mark-paid', async (req, res, next) => {
     }
 });
 
+// ─── POST /api/invoices/:id/send ─────────────────────────────────────────────
+router.post('/:id/send', async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const invoiceId = req.params.id;
+
+        // Fetch invoice and client email
+        const invResult = await pool.query(
+            `SELECT i.*, c.email as client_email 
+             FROM invoices i 
+             LEFT JOIN clients c ON i.client_id = c.id 
+             WHERE i.id = $1 AND i.user_id = $2`,
+            [invoiceId, userId]
+        );
+        const invoice = invResult.rows[0];
+
+        if (!invoice) return res.status(404).json({ message: 'Invoice not found.' });
+        if (!invoice.client_email) return res.status(400).json({ message: 'Client email is required to send invoice.' });
+
+        // Simulate email dispatch delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Update status to SENT if it was DRAFT
+        const updateResult = await pool.query(
+            `UPDATE invoices 
+             SET status = 'SENT', updated_at = NOW() 
+             WHERE id = $1 AND user_id = $2 AND status = 'DRAFT'
+             RETURNING *`,
+            [invoiceId, userId]
+        );
+
+        res.json({
+            message: `Invoice ${invoice.invoice_number} dispatched to ${invoice.client_email}`,
+            invoice: updateResult.rows[0] || invoice
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;
