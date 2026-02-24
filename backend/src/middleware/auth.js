@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { pool } = require('../config/db');
+const User = require('../models/User');
 
 /**
  * Middleware to protect routes — verifies JWT from Authorization header.
@@ -21,12 +21,8 @@ const protect = async (req, res, next) => {
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Fetch user from DB (exclude password)
-        const result = await pool.query(
-            'SELECT id, email, business_name, phone, address, tax_id, logo_url, default_hourly_rate, invoice_prefix, payment_instructions, terms_conditions, default_tax_rate FROM users WHERE id = $1',
-            [decoded.id]
-        );
-        const user = result.rows[0];
+        // Fetch user from MongoDB (exclude password)
+        const user = await User.findById(decoded.id).select('-password_hash');
 
         if (!user) {
             return res.status(401).json({ message: 'Not authorized. User not found.' });
