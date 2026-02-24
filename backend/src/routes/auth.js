@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { pool } = require('../config/db');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -31,8 +31,8 @@ router.post(
             const { email, password, business_name } = req.body;
 
             // Check if user already exists
-            const existingUserResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-            if (existingUserResult.rows.length > 0) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
                 return res.status(409).json({ message: 'An account with this email already exists.' });
             }
 
@@ -41,13 +41,13 @@ router.post(
             const password_hash = await bcrypt.hash(password, salt);
 
             // Create user
-            const newUserResult = await pool.query(
-                'INSERT INTO users (email, password_hash, business_name) VALUES ($1, $2, $3) RETURNING id, email, business_name',
-                [email, password_hash, business_name]
-            );
-            const user = newUserResult.rows[0];
+            const user = await User.create({
+                email,
+                password_hash,
+                business_name
+            });
 
-            const token = generateToken(user.id);
+            const token = generateToken(user._id);
 
             res.status(201).json({
                 message: 'Account created successfully',
@@ -81,11 +81,7 @@ router.post(
             const { email, password } = req.body;
 
             // Find user
-            const result = await pool.query(
-                'SELECT id, email, password_hash, business_name, logo_url FROM users WHERE email = $1',
-                [email]
-            );
-            const user = result.rows[0];
+            const user = await User.findOne({ email });
 
             if (!user) {
                 return res.status(401).json({ message: 'Invalid email or password.' });
@@ -97,7 +93,7 @@ router.post(
                 return res.status(401).json({ message: 'Invalid email or password.' });
             }
 
-            const token = generateToken(user.id);
+            const token = generateToken(user._id);
 
             res.json({
                 message: 'Login successful',

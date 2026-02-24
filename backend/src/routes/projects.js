@@ -1,5 +1,6 @@
 const express = require('express');
-const { pool } = require('../config/db');
+const Project = require('../models/Project');
+const Client = require('../models/Client');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -10,32 +11,29 @@ router.use(protect);
 router.get('/', async (req, res, next) => {
     try {
         const { status, client_id } = req.query;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
-        let queryText = `
-            SELECT p.*, c.name as client_name, c.company as client_company 
-            FROM projects p 
-            LEFT JOIN clients c ON p.client_id = c.id 
-            WHERE p.user_id = $1
-        `;
-        const params = [userId];
-        let index = 2;
+        let query = { user_id: userId };
 
         if (status) {
-            queryText += ` AND p.status = $${index}`;
-            params.push(status.toUpperCase());
-            index++;
+            query.status = status.toUpperCase();
         }
         if (client_id) {
-            queryText += ` AND p.client_id = $${index}`;
-            params.push(client_id);
-            index++;
+            query.client_id = client_id;
         }
 
-        queryText += ' ORDER BY p.created_at DESC';
+        const projects = await Project.find(query)
+            .populate('client_id', 'name company')
+            .sort({ createdAt: -1 });
 
-        const result = await pool.query(queryText, params);
-        res.json({ projects: result.rows });
+        // Map client_id fields to match expected frontend format
+        const formattedProjects = projects.map(p => ({
+            ...p.toObject(),
+            client_name: p.client_id?.name,
+            client_company: p.client_id?.company
+        }));
+
+        res.json({ projects: formattedProjects });
     } catch (error) {
         next(error);
     }
@@ -44,27 +42,25 @@ router.get('/', async (req, res, next) => {
 // ─── GET /api/projects/:id ────────────────────────────────────────────────────
 router.get('/:id', async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const projectId = req.params.id;
 
         // Fetch project with client info
-        const projectResult = await pool.query(
-            `SELECT p.*, c.name as client_name, c.company as client_company, c.email as client_email 
-             FROM projects p 
-             LEFT JOIN clients c ON p.client_id = c.id 
-             WHERE p.id = $1 AND p.user_id = $2`,
-            [projectId, userId]
-        );
-        const project = projectResult.rows[0];
+        const projectDoc = await Project.findOne({ _id: projectId, user_id: userId })
+            .populate('client_id', 'name company email');
 
-        if (!project) return res.status(404).json({ message: 'Project not found.' });
+        if (!projectDoc) return res.status(404).json({ message: 'Project not found.' });
+
+        // Convert to object to add dynamic fields
+        const project = projectDoc.toObject();
+        project.client_name = projectDoc.client_id?.name;
+        project.client_company = projectDoc.client_id?.company;
+        project.client_email = projectDoc.client_id?.email;
 
         // Fetch associated time entries
-        const timeEntriesResult = await pool.query(
-            'SELECT * FROM time_entries WHERE project_id = $1 AND user_id = $2 ORDER BY created_at DESC',
-            [projectId, userId]
-        );
-        project.timeEntries = timeEntriesResult.rows;
+        const TimeEntry = require('../models/TimeEntry');
+        const timeEntries = await TimeEntry.find({ project_id: projectId, user_id: userId }).sort({ createdAt: -1 });
+        project.timeEntries = timeEntries;
 
         res.json({ project });
     } catch (error) {
@@ -81,18 +77,23 @@ router.post('/', async (req, res, next) => {
         if (!client_id) return res.status(400).json({ message: 'Client is required.' });
 
         // Verify client belongs to this user
-        const clientCheck = await pool.query('SELECT id FROM clients WHERE id = $1 AND user_id = $2', [client_id, req.user.id]);
-        if (clientCheck.rows.length === 0) return res.status(404).json({ message: 'Client not found.' });
+        const client = await Client.findOne({ _id: client_id, user_id: req.user._id });
+        if (!client) return res.status(404).json({ message: 'Client not found.' });
 
-        const result = await pool.query(
-            `INSERT INTO projects 
-            (user_id, client_id, name, description, start_date, deadline, status, budget_type, estimated_budget, billing_rate) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-            RETURNING *`,
-            [req.user.id, client_id, name, description, start_date || null, deadline || null, status || 'ACTIVE', budget_type || 'HOURLY', estimated_budget || 0, billing_rate || 0]
-        );
+        const project = await Project.create({
+            user_id: req.user._id,
+            client_id,
+            name,
+            description,
+            start_date: start_date || null,
+            deadline: deadline || null,
+            status: status || 'ACTIVE',
+            budget_type: budget_type || 'HOURLY',
+            estimated_budget: estimated_budget || 0,
+            billing_rate: billing_rate || 0
+        });
 
-        res.status(201).json({ message: 'Project created successfully', project: result.rows[0] });
+        res.status(201).json({ message: 'Project created successfully', project });
     } catch (error) {
         next(error);
     }
@@ -101,33 +102,18 @@ router.post('/', async (req, res, next) => {
 // ─── PUT /api/projects/:id ────────────────────────────────────────────────────
 router.put('/:id', async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const projectId = req.params.id;
 
-        const allowedFields = ['name', 'client_id', 'description', 'start_date', 'deadline', 'status', 'budget_type', 'estimated_budget', 'billing_rate'];
-        const updates = [];
-        const values = [];
-        let index = 1;
+        const project = await Project.findOneAndUpdate(
+            { _id: projectId, user_id: userId },
+            { $set: req.body },
+            { new: true, runValidators: true }
+        );
 
-        allowedFields.forEach((field) => {
-            if (req.body[field] !== undefined) {
-                updates.push(`${field} = $${index}`);
-                values.push(req.body[field]);
-                index++;
-            }
-        });
+        if (!project) return res.status(404).json({ message: 'Project not found.' });
 
-        if (updates.length === 0) {
-            return res.status(400).json({ message: 'No valid fields provided for update.' });
-        }
-
-        values.push(projectId, userId);
-        const queryText = `UPDATE projects SET ${updates.join(', ')}, updated_at = NOW() WHERE id = $${index} AND user_id = $${index + 1} RETURNING *`;
-
-        const result = await pool.query(queryText, values);
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Project not found.' });
-
-        res.json({ message: 'Project updated successfully', project: result.rows[0] });
+        res.json({ message: 'Project updated successfully', project });
     } catch (error) {
         next(error);
     }
@@ -136,12 +122,9 @@ router.put('/:id', async (req, res, next) => {
 // ─── DELETE /api/projects/:id ─────────────────────────────────────────────────
 router.delete('/:id', async (req, res, next) => {
     try {
-        const result = await pool.query(
-            'DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING id',
-            [req.params.id, req.user.id]
-        );
+        const project = await Project.findOneAndDelete({ _id: req.params.id, user_id: req.user._id });
 
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Project not found.' });
+        if (!project) return res.status(404).json({ message: 'Project not found.' });
 
         res.json({ message: 'Project deleted successfully.' });
     } catch (error) {
