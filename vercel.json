@@ -23,10 +23,11 @@
       "dest": "backend/uploads/$1"
     },
     {
-      "handle": "filesystem"
+      "src": "/assets/(.*)",
+      "dest": "/frontend/assets/$1"
     },
     {
-      "src": "/(.*)",
+      "src": "/((?!api|uploads|assets).*)",
       "dest": "/frontend/index.html"
     }
   ]
