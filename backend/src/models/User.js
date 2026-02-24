@@ -1,74 +1,54 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const User = sequelize.define('User', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+const userSchema = new mongoose.Schema({
     email: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
         unique: true,
-        validate: { isEmail: true },
+        trim: true,
+        lowercase: true
     },
     password_hash: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true
     },
     business_name: {
-        type: DataTypes.STRING,
-        allowNull: true,
+        type: String,
+        trim: true
     },
-    phone: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    address: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    tax_id: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    logo_url: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    phone: String,
+    address: String,
+    tax_id: String,
+    logo_url: String,
     default_hourly_rate: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     invoice_prefix: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: 'INV',
+        type: String,
+        default: 'INV'
     },
     invoice_next_number: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 1,
+        type: Number,
+        default: 1
     },
-    payment_instructions: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    terms_conditions: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
+    payment_instructions: String,
+    terms_conditions: String,
     default_tax_rate: {
-        type: DataTypes.DECIMAL(5, 2),
-        allowNull: true,
-        defaultValue: 0,
-    },
+        type: Number,
+        default: 0
+    }
 }, {
-    tableName: 'users',
-    timestamps: true,
-    underscored: true,
+    timestamps: true
 });
 
-module.exports = User;
+// Virtual for id to match Sequelize interface if needed
+userSchema.virtual('id').get(function () {
+    return this._id.toHexString();
+});
+
+userSchema.set('toJSON', {
+    virtuals: true
+});
+
+module.exports = mongoose.model('User', userSchema);

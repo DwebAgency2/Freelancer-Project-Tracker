@@ -116,7 +116,7 @@ const Register = () => {
                 </form>
 
                 <div className="auth-footer">
-                    <p>Already joined? <Link to="/login">Login Here</Link></p>
+                    <p>Already joined? <Link to="/login">Log-in Here</Link></p>
                 </div>
             </div>
         </div>

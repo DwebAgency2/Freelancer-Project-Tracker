@@ -4,7 +4,8 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
-const { pool } = require('./src/config/db');
+const connectDB = require('./src/config/db');
+const mongoose = require('mongoose');
 const errorHandler = require('./src/middleware/errorHandler');
 
 // Route imports
@@ -40,22 +41,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
-app.get('/api/health', async (req, res) => {
-    try {
-        await pool.query('SELECT NOW()');
-        res.json({
-            status: 'ok',
-            database: 'connected',
-            timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            database: 'disconnected',
-            error: error.message
-        });
-    }
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV
+    });
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
@@ -76,19 +68,18 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ─── Start Server ─────────────────────────────────────────────
-if (process.env.NODE_ENV !== 'production') {
-    const startServer = async () => {
-        try {
-            await pool.query('SELECT NOW()');
-            console.log('✅ Database connected successfully (PostgreSQL).');
-            app.listen(PORT, () => {
-                console.log(`🚀 Server running on http://localhost:${PORT}`);
-            });
-        } catch (error) {
-            console.error('❌ Failed to start server:', error.message);
-        }
-    };
-    startServer();
-}
+const startServer = async () => {
+    try {
+        await connectDB();
+        console.log('✅ MongoDB Connected successfully.');
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error.message);
+    }
+};
+
+startServer();
 
 module.exports = app;

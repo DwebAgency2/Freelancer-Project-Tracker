@@ -1,88 +1,58 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Invoice = sequelize.define('Invoice', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+const invoiceSchema = new mongoose.Schema({
     user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     client_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'clients', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Client',
+        required: true
     },
     invoice_number: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true
     },
     invoice_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
+        type: Date,
+        required: true,
+        default: Date.now
     },
-    due_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-    },
+    due_date: Date,
     subtotal: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     tax_rate: {
-        type: DataTypes.DECIMAL(5, 2),
-        allowNull: true,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     tax_amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     discount_amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     total: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     status: {
-        type: DataTypes.ENUM('DRAFT', 'SENT', 'PAID', 'OVERDUE'),
-        allowNull: false,
-        defaultValue: 'DRAFT',
+        type: String,
+        enum: ['DRAFT', 'SENT', 'PAID', 'OVERDUE'],
+        default: 'DRAFT'
     },
-    payment_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-    },
-    payment_amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-    },
-    payment_notes: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    notes: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    pdf_url: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    payment_date: Date,
+    payment_amount: Number,
+    payment_notes: String,
+    notes: String,
+    pdf_url: String
 }, {
-    tableName: 'invoices',
-    timestamps: true,
-    underscored: true,
+    timestamps: true
 });
 
-module.exports = Invoice;
+module.exports = mongoose.model('Invoice', invoiceSchema);

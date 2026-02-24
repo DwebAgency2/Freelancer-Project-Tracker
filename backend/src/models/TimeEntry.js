@@ -1,63 +1,46 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const TimeEntry = sequelize.define('TimeEntry', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+const timeEntrySchema = new mongoose.Schema({
     user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     project_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'projects', key: 'id' },
-    },
-    invoice_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: { model: 'invoices', key: 'id' },
-    },
-    date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-    },
-    start_time: {
-        type: DataTypes.TIME,
-        allowNull: true,
-    },
-    end_time: {
-        type: DataTypes.TIME,
-        allowNull: true,
-    },
-    // Duration stored in minutes
-    duration: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true
     },
     description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+        type: String,
+        trim: true
     },
-    is_billable: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
+    date: {
+        type: Date,
+        default: Date.now
     },
-    is_billed: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
+    duration_minutes: {
+        type: Number,
+        default: 0
     },
+    hourly_rate: {
+        type: Number,
+        default: 0
+    },
+    total_amount: {
+        type: Number,
+        default: 0
+    },
+    is_invoiced: {
+        type: Boolean,
+        default: false
+    },
+    invoice_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Invoice'
+    }
 }, {
-    tableName: 'time_entries',
-    timestamps: true,
-    underscored: true,
+    timestamps: true
 });
 
-module.exports = TimeEntry;
+module.exports = mongoose.model('TimeEntry', timeEntrySchema);

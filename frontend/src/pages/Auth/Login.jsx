@@ -39,7 +39,7 @@ const Login = () => {
                         <Zap size={28} color="white" fill="white" />
                     </div>
                     <div>
-                        <h2>Login</h2>
+                        <h2>Log-in</h2>
                         <p>Access your hub</p>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ const Login = () => {
                         />
                     </div>
                     <button type="submit" className="btn-primary auth-btn" disabled={loading}>
-                        {loading ? <div className="btn-spinner"></div> : 'Login to Dashboard'}
+                        {loading ? <div className="btn-spinner"></div> : 'Log-in to Dashboard'}
                     </button>
                 </form>
 

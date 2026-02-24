@@ -1,46 +1,34 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const InvoiceLineItem = sequelize.define('InvoiceLineItem', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+const invoiceLineItemSchema = new mongoose.Schema({
     invoice_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'invoices', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Invoice',
+        required: true
     },
     description: {
-        type: DataTypes.TEXT,
-        allowNull: false,
+        type: String,
+        required: true,
+        trim: true
     },
     quantity: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        defaultValue: 1,
+        type: Number,
+        default: 1
     },
     rate: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        defaultValue: 0,
+        type: Number,
+        default: 0
     },
     order: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-    },
+        type: Number,
+        default: 0
+    }
 }, {
-    tableName: 'invoice_line_items',
-    timestamps: true,
-    underscored: true,
-    updatedAt: false,
+    timestamps: { createdAt: true, updatedAt: false }
 });
 
-module.exports = InvoiceLineItem;
+module.exports = mongoose.model('InvoiceLineItem', invoiceLineItemSchema);

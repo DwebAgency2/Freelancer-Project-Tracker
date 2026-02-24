@@ -1,64 +1,41 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Client = sequelize.define('Client', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+const clientSchema = new mongoose.Schema({
     user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
+        trim: true
     },
-    company: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    company: String,
     email: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: { isEmail: true },
+        type: String,
+        trim: true,
+        lowercase: true
     },
-    phone: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    address: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    tax_id: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    phone: String,
+    address: String,
+    tax_id: String,
     default_hourly_rate: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
+        type: Number,
+        default: 0
     },
     payment_terms: {
-        type: DataTypes.ENUM('NET_15', 'NET_30', 'NET_45', 'NET_60'),
-        allowNull: true,
-        defaultValue: 'NET_30',
+        type: String,
+        enum: ['NET_15', 'NET_30', 'NET_45', 'NET_60'],
+        default: 'NET_30'
     },
-    notes: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
+    notes: String,
     is_archived: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-    },
+        type: Boolean,
+        default: false
+    }
 }, {
-    tableName: 'clients',
-    timestamps: true,
-    underscored: true,
+    timestamps: true
 });
 
-module.exports = Client;
+module.exports = mongoose.model('Client', clientSchema);

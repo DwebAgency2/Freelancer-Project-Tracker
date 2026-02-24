@@ -1,60 +1,44 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Project = sequelize.define('Project', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
+const projectSchema = new mongoose.Schema({
     user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     client_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'clients', key: 'id' },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Client',
+        required: true
     },
     name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
+        trim: true
     },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    start_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-    },
-    deadline: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-    },
+    description: String,
+    start_date: Date,
+    deadline: Date,
     status: {
-        type: DataTypes.ENUM('ACTIVE', 'COMPLETED', 'ON_HOLD', 'CANCELLED'),
-        allowNull: false,
-        defaultValue: 'ACTIVE',
+        type: String,
+        enum: ['ACTIVE', 'COMPLETED', 'ON_HOLD', 'CANCELLED'],
+        default: 'ACTIVE'
     },
     budget_type: {
-        type: DataTypes.ENUM('HOURLY', 'FIXED_PRICE'),
-        allowNull: false,
-        defaultValue: 'HOURLY',
+        type: String,
+        enum: ['HOURLY', 'FIXED_PRICE'],
+        default: 'HOURLY'
     },
     estimated_budget: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
+        type: Number,
+        default: 0
     },
     billing_rate: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-    },
+        type: Number,
+        default: 0
+    }
 }, {
-    tableName: 'projects',
-    timestamps: true,
-    underscored: true,
+    timestamps: true
 });
 
-module.exports = Project;
+module.exports = mongoose.model('Project', projectSchema);
