@@ -49,19 +49,19 @@ const Register = () => {
             <div className="auth-card animate-slide-up">
                 <div className="auth-brand">
                     <div className="auth-logo-wrapper">
-                        <Zap size={36} color="white" fill="white" />
+                        <Zap size={28} color="white" fill="white" />
                     </div>
                     <div>
-                        <h2>REGISTRATION</h2>
-                        <p>Initialize your professional operational hub</p>
+                        <h2>Registration</h2>
+                        <p>Join the agency network</p>
                     </div>
                 </div>
 
                 {error && <div className="auth-error">{error}</div>}
 
-                <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
+                <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Business / Agency Entity</label>
+                        <label>Business Name</label>
                         <input
                             type="text"
                             name="business_name"
@@ -69,11 +69,11 @@ const Register = () => {
                             value={formData.business_name}
                             onChange={handleChange}
                             required
-                            placeholder="e.g. Orbit Creative Studio"
+                            placeholder="e.g. Orbit Studio"
                         />
                     </div>
                     <div className="form-group">
-                        <label>Operational Channel (Email)</label>
+                        <label>Email Address</label>
                         <input
                             type="email"
                             name="email"
@@ -81,12 +81,12 @@ const Register = () => {
                             value={formData.email}
                             onChange={handleChange}
                             required
-                            placeholder="operative@zentrack.ai"
+                            placeholder="name@agency.com"
                         />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3.5rem' }}>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                            <label>Security Key</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                            <label>Password</label>
                             <input
                                 type="password"
                                 name="password"
@@ -94,11 +94,11 @@ const Register = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                placeholder="••••••••"
+                                placeholder="••••"
                             />
                         </div>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                            <label>Confirm Key</label>
+                        <div className="form-group">
+                            <label>Confirm</label>
                             <input
                                 type="password"
                                 name="confirmPassword"
@@ -106,17 +106,17 @@ const Register = () => {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
-                                placeholder="••••••••"
+                                placeholder="••••"
                             />
                         </div>
                     </div>
-                    <button type="submit" className="btn-primary auth-btn" style={{ height: '4rem', fontSize: '1.25rem', letterSpacing: '0.05em' }} disabled={loading}>
-                        {loading ? <div className="btn-spinner"></div> : 'INITIATE REGISTRATION'}
+                    <button type="submit" className="btn-primary auth-btn" disabled={loading}>
+                        {loading ? <div className="btn-spinner"></div> : 'Create Your Account'}
                     </button>
                 </form>
 
                 <div className="auth-footer">
-                    <p>Already registered? <Link to="/login">GO TO LOG IN</Link></p>
+                    <p>Already joined? <Link to="/login">Login Here</Link></p>
                 </div>
             </div>
         </div>

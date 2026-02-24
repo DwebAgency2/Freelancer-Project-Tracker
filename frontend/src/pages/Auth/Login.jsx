@@ -36,30 +36,30 @@ const Login = () => {
             <div className="auth-card animate-slide-up">
                 <div className="auth-brand">
                     <div className="auth-logo-wrapper">
-                        <Zap size={36} color="white" fill="white" />
+                        <Zap size={28} color="white" fill="white" />
                     </div>
                     <div>
-                        <h2>LOG IN</h2>
-                        <p>Enter your credentials to access the console</p>
+                        <h2>Login</h2>
+                        <p>Access your hub</p>
                     </div>
                 </div>
 
                 {error && <div className="auth-error">{error}</div>}
 
-                <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
+                <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Operational Identity</label>
+                        <label>Email Address</label>
                         <input
                             type="email"
                             className="styled-input"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            placeholder="agent@zentrack.ai"
+                            placeholder="name@agency.com"
                         />
                     </div>
-                    <div className="form-group" style={{ marginBottom: '3.5rem' }}>
-                        <label>Security Key</label>
+                    <div className="form-group">
+                        <label>Password</label>
                         <input
                             type="password"
                             className="styled-input"
@@ -69,13 +69,13 @@ const Login = () => {
                             placeholder="••••••••"
                         />
                     </div>
-                    <button type="submit" className="btn-primary auth-btn" style={{ height: '4rem', fontSize: '1.25rem', letterSpacing: '0.05em' }} disabled={loading}>
-                        {loading ? <div className="btn-spinner"></div> : 'INITIALIZE SESSION'}
+                    <button type="submit" className="btn-primary auth-btn" disabled={loading}>
+                        {loading ? <div className="btn-spinner"></div> : 'Login to Dashboard'}
                     </button>
                 </form>
 
                 <div className="auth-footer">
-                    <p>New operative? <Link to="/register">GO TO REGISTRATION</Link></p>
+                    <p>New user? <Link to="/register">Create Account</Link></p>
                 </div>
             </div>
         </div>
