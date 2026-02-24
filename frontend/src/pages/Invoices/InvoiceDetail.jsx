@@ -29,7 +29,7 @@ const InvoiceDetail = () => {
     const fetchInvoice = async () => {
         try {
             setLoading(true);
-            const response = await api.get(`/invoices/${id}`);
+            const response = await api.get(`invoices/${id}`);
             setInvoice(response.data.invoice);
         } catch (err) {
             console.error('Error fetching invoice:', err);
@@ -40,7 +40,7 @@ const InvoiceDetail = () => {
 
     const fetchUser = async () => {
         try {
-            const response = await api.get('/auth/me');
+            const response = await api.get('auth/me');
             setUser(response.data.user);
         } catch (err) {
             console.error('Error fetching user profile:', err);
@@ -49,7 +49,7 @@ const InvoiceDetail = () => {
 
     const handleMarkPaid = async () => {
         try {
-            await api.put(`/invoices/${id}/mark-paid`, {
+            await api.put(`invoices/${id}/mark-paid`, {
                 payment_amount: parseFloat(paymentAmount),
                 payment_date: new Date().toISOString(),
                 payment_notes: 'Settled via secure protocol'
@@ -65,7 +65,7 @@ const InvoiceDetail = () => {
     const handleSend = async () => {
         try {
             setSending(true);
-            const response = await api.post(`/invoices/${id}/send`);
+            const response = await api.post(`invoices/${id}/send`);
             toast.success(response.data.message);
             fetchInvoice();
         } catch (err) {

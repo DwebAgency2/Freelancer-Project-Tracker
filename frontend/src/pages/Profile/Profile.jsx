@@ -61,13 +61,13 @@ const Profile = () => {
 
         try {
             // 1. Update Profile Data
-            const profileRes = await api.put('/user/profile', formData);
+            const profileRes = await api.put('user/profile', formData);
 
             // 2. Upload Logo if selected
             if (logo) {
                 const logoFormData = new FormData();
                 logoFormData.append('logo', logo);
-                const logoRes = await api.post('/user/logo', logoFormData, {
+                const logoRes = await api.post('user/logo', logoFormData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 profileRes.data.user.logo_url = logoRes.data.logo_url;
