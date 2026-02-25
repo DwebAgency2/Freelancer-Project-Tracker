@@ -20,17 +20,20 @@
     },
     {
       "src": "/assets/(.*)",
-      "dest": "/frontend/assets/$1",
+      "dest": "/assets/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      },
       "continue": true
     },
     {
-      "src": "/(vite.svg)",
-      "dest": "/frontend/$1",
+      "src": "/vite.svg",
+      "dest": "/vite.svg",
       "continue": true
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/index.html"
+      "dest": "/index.html"
     }
   ]
 }
