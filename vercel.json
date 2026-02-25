@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "trailingSlash": false,
   "builds": [
     {
       "src": "backend/server.js",
@@ -13,17 +14,22 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "backend/server.js"
+      "source": "/api/(.*)",
+      "destination": "/backend/server.js"
     },
     {
-      "handle": "filesystem"
+      "source": "/assets/(.*)",
+      "destination": "/frontend/assets/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/vite.svg",
+      "destination": "/frontend/vite.svg"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/frontend/index.html"
     }
   ]
 }
