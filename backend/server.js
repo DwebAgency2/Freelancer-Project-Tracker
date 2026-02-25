@@ -30,6 +30,31 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+// Ensure database connection in serverless (Top of stack)
+let isConnected = false;
+app.use(async (req, res, next) => {
+    try {
+        if (!isConnected) {
+            if (!process.env.MONGODB_URI) {
+                console.error('❌ MONGODB_URI is not defined in environment variables');
+                return res.status(500).json({ message: 'Database configuration missing' });
+            }
+            await connectDB();
+            isConnected = true;
+            console.log('✅ MongoDB Connected (Serverless)');
+        }
+        next();
+    } catch (error) {
+        console.error('❌ Database connection error:', error.message);
+        res.status(500).json({ message: 'Database connection failed' });
+    }
+});
+
 app.use(cors({
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:3000'],
     credentials: true,
@@ -67,19 +92,20 @@ app.use((req, res) => {
 // ─── Global Error Handler ─────────────────────────────────────────────────────
 app.use(errorHandler);
 
-// ─── Start Server ─────────────────────────────────────────────
-const startServer = async () => {
-    try {
-        await connectDB();
-        console.log('✅ MongoDB Connected successfully.');
-        app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error('❌ Failed to start server:', error.message);
-    }
-};
-
-startServer();
+// For local testing
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_DEV) {
+    const startServer = async () => {
+        try {
+            await connectDB();
+            console.log('✅ MongoDB Connected successfully.');
+            app.listen(PORT, () => {
+                console.log(`🚀 Server running on http://localhost:${PORT}`);
+            });
+        } catch (error) {
+            console.error('❌ Failed to start server:', error.message);
+        }
+    };
+    startServer();
+}
 
 module.exports = app;
