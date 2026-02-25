@@ -1,8 +1,20 @@
 const app = require('../backend/server');
 
 // Bridge entry for Vercel Serverless Functions
-module.exports = (req, res) => {
-    // Add bridge-level logging
-    console.log(`[Bridge] ${req.method} ${req.url}`);
-    return app(req, res);
+module.exports = async (req, res) => {
+    const timestamp = new Date().toISOString();
+    try {
+        console.log(`[${timestamp}] 📬 Bridge received: ${req.method} ${req.url}`);
+
+        // Pass to Express
+        return app(req, res);
+    } catch (error) {
+        console.error(`[${timestamp}] ❌ Bridge Crash:`, error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                message: 'Internal Server Error (Vercel Bridge)',
+                error: error.message
+            });
+        }
+    }
 };
