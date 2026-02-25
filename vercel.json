@@ -19,18 +19,11 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/frontend/assets/$1",
-      "continue": true
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1",
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/index.html"
+      "dest": "/index.html"
     }
   ]
 }
