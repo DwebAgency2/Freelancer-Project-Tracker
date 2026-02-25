@@ -30,6 +30,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
+console.log('🚀 Server.js starting up...');
+
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
@@ -44,6 +46,7 @@ app.use(async (req, res, next) => {
                 console.error('❌ MONGODB_URI is not defined in environment variables');
                 return res.status(500).json({ message: 'Database configuration missing' });
             }
+            const connectDB = require('./src/config/db');
             await connectDB();
             isConnected = true;
             console.log('✅ MongoDB Connected (Serverless)');
@@ -56,7 +59,7 @@ app.use(async (req, res, next) => {
 });
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:3000'],
+    origin: true,
     credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
