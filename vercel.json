@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "trailingSlash": false,
   "builds": [
     {
       "src": "api/index.js",
@@ -20,16 +19,8 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/assets/(.*)",
-      "destination": "/frontend/assets/$1"
-    },
-    {
-      "source": "/vite.svg",
-      "destination": "/frontend/vite.svg"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/frontend/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
