@@ -30,12 +30,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-console.log('🚀 Server.js starting up...');
-
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
 
 // Ensure database connection in serverless (Top of stack)
 let isConnected = false;
@@ -43,18 +37,15 @@ app.use(async (req, res, next) => {
     try {
         if (!isConnected) {
             if (!process.env.MONGODB_URI) {
-                console.error('❌ MONGODB_URI is not defined in environment variables');
-                return res.status(500).json({ message: 'Database configuration missing' });
+                return res.status(500).json({ message: 'Server configuration error' });
             }
             const connectDB = require('./src/config/db');
             await connectDB();
             isConnected = true;
-            console.log('✅ MongoDB Connected (Serverless)');
         }
         next();
     } catch (error) {
-        console.error('❌ Database connection error:', error.message);
-        res.status(500).json({ message: 'Database connection failed' });
+        res.status(500).json({ message: 'Service temporarily unavailable' });
     }
 });
 

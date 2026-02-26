@@ -25,7 +25,13 @@ const Register = () => {
         e.preventDefault();
         setError('');
 
+        if (formData.password.length < 6) {
+            toast.error('Password must be at least 6 characters long.');
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
+            toast.error('Passwords do not match.');
             return setError('Passwords do not match');
         }
 

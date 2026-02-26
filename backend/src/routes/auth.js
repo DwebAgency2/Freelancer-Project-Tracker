@@ -23,10 +23,8 @@ router.post(
     ],
     async (req, res, next) => {
         try {
-            console.log('📝 Register Request received:', { body: req.body });
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                console.error('❌ Registration Validation Failed:', JSON.stringify(errors.array(), null, 2));
                 return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
             }
 
@@ -35,7 +33,6 @@ router.post(
             // Check if user already exists
             const existingUser = await User.findOne({ email });
             if (existingUser) {
-                console.warn(`⚠️ Registration attempt with existing email: ${email}`);
                 return res.status(409).json({ message: 'An account with this email already exists.' });
             }
 
@@ -50,7 +47,7 @@ router.post(
                 business_name
             });
 
-            console.log(`✅ User registered successfully: ${user.email}`);
+
             const token = generateToken(user._id);
 
             res.status(201).json({
@@ -63,7 +60,6 @@ router.post(
                 },
             });
         } catch (error) {
-            console.error('❌ Registration Error:', error);
             next(error);
         }
     }
